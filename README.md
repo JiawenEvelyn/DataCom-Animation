@@ -20,6 +20,15 @@ python3 -m http.server 8000
 - **报文动画**：数据报文穿越路由器、协议报文上送与 FIB 下发、报文在接口板 NP/TM 内的处理。
 - **命令行实验**：模拟路由器 R1，支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack 等，配置会实时反映到设备图上。
 
+## 风格约定
+
+页面右上角可以切换 10 种视觉风格，默认是「手账笔记」。**每个新增的视图和动画都必须在所有风格下可用**：
+
+- 颜色一律使用 `css/style.css` 中的 CSS 变量（材质 `--metal-* / --panel-* / --pcb-*`、强调色 `--accent`、控制平面 `--ctrl` 等），不要写死颜色。
+- 每种风格在 `:root[data-skin="xxx"]` 中重新定义这些变量，并可以追加少量专属效果（手绘抖动滤镜、阴影线、发光、像素描边等）。
+- 需要引线标注的部件，在 `CALLOUTS` 中登记，解剖图谱、白板、黑板、水墨、蓝图风格会自动显示编号引线。
+- 新增风格：在 `SKINS` 数组加一项，并在 CSS 末尾加一个 `[data-skin]` 区块。
+
 ## 目录结构
 
 ```

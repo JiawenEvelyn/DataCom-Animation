@@ -122,7 +122,7 @@ function render(v,{fit=true,animate=true}={}){
   stopFlow();
   const doit=()=>{view=v;scene.innerHTML='';fx.innerHTML='';scene.classList.toggle('xray',xray&&v.k==='chassis');
     ({chassis:drawChassis,board:drawBoard,sub:drawSub,port:drawPort})[v.k](v);
-    if(fit)fitView();crumbs();flowButtons();
+    drawCallouts(v);if(fit)fitView();crumbs();flowButtons();
     document.getElementById('hint').textContent={chassis:'滚轮或双指缩放 · 拖动平移 · 点击单板、子卡或端口深入查看',board:'单板平放展示，方便观察内部 · 点击芯片看讲解，点击子卡继续深入',sub:'点击端口查看接口 · 黄色的是光纤，白色的是光模块',port:'点击各个方块查看讲解 · 在命令行实验里修改接口，这里会同步变化'}[v.k];
     document.getElementById('xray').hidden=v.k!=='chassis';
     if(sel){const e=scene.querySelector(`[data-id="${CSS.escape(sel)}"]`);if(e)e.classList.add('sel')}
@@ -303,6 +303,27 @@ function drawPort({name}){
     const b=grp(lo,{kb,id:'lg:'+kb,tip:t});const x=idx*228;el('rect',{x,y:14,width:212,height:58,rx:10,class:'d-box'},b);el('text',{x:x+14,y:38,class:'d-m'},b).textContent=t;el('text',{x:x+14,y:58,class:'d-s'},b).textContent=s});
 }
 
+/* ============ 引线标注（解剖图谱等风格显示） ============ */
+const CALLOUTS={
+  chassis:()=>[['chassis','机框'],['fan'],['slot:1'],['slot:5'],['slot:6','主控板（备用）'],['slot:7'],['slot:10'],['pwr0']],
+  LPU:()=>[['c:np'],['c:tm'],['c:tcam'],['c:lcpu'],['c:conn'],['c:dcdc'],['c:pic0','子卡 0 · 8×GE'],['c:pic1','子卡 1 · 2×100GE'],['panel','前面板']],
+  MPU:()=>[['c:mpu-cpu','主控 CPU'],['c:mem0'],['c:flash'],['c:clock'],['c:conn'],['c:dcdc'],['mgmt']],
+  SFU:()=>[['c:sw0'],['c:sw1'],['c:conn'],['c:dcdc'],['panel','前面板']],
+  sub:v=>{const L=[['c:phy'],['c:pconn','子卡连接器'],['ppanel','子卡面板']];const c=Object.values(IF).find(i=>i.slot===v.n&&i.pic===v.p&&i.cable);if(c)L.push(['opt:'+c.name],['fib:'+c.name]);L.push([`p:${portIf(v.n,v.p,PICS[v.p].count-1)}:cage`,'端口笼子']);return L}};
+const CIRC='①②③④⑤⑥⑦⑧⑨⑩';
+function drawCallouts(v){const key=v.k==='chassis'?'chassis':v.k==='board'?slotOf(v.n).type:v.k==='sub'?'sub':null;if(!key)return;
+  const sb=scene.getBBox(),cx=sb.x+sb.width/2,g=el('g',{class:'callouts'},scene);
+  const items=CALLOUTS[key](v).map(([id,lab])=>{const e=scene.querySelector(`[data-id="${CSS.escape(id)}"]`);if(!e)return null;const b=e.getBBox();const k=KB[e.dataset.kb]||{};
+    return {id,ax:b.x+b.width/2,ay:b.y+b.height/2,kb:e.dataset.kb,lab:lab||k.title||id,en:k.en||''}}).filter(Boolean);
+  const gap=Math.max(36,sb.height/11);let num=0;
+  [['L',items.filter(i=>i.ax<cx)],['R',items.filter(i=>i.ax>=cx)]].forEach(([side,arr])=>{arr.sort((a,b)=>a.ay-b.ay);let prev=-1e9;
+    const x0=side==='L'?sb.x-sb.width*.12:sb.x+sb.width*1.12;
+    arr.forEach(i=>{const y=Math.max(i.ay,prev+gap);prev=y;const n=CIRC[num++]||'•';
+      const c=grp(g,{kb:i.kb,id:'co:'+i.id,tip:i.lab});const ex=side==='L'?x0+28:x0-28;
+      el('path',{d:`M${i.ax} ${i.ay} L${ex} ${y} L${x0} ${y}`,class:'co-line'},c);el('circle',{cx:i.ax,cy:i.ay,r:3,class:'co-dot'},c);
+      const t=el('text',{x:side==='L'?x0-6:x0+6,y:y+5,class:'co-t','text-anchor':side==='L'?'end':'start'},c);t.textContent=`${n} ${i.lab}`;
+      if(i.en){const e2=el('text',{x:side==='L'?x0-6:x0+6,y:y+21,class:'co-e','text-anchor':side==='L'?'end':'start'},c);e2.textContent=i.en}})})}
+
 /* ============ 适配视图 / 缩放平移 ============ */
 let vt={k:1,x:0,y:0};const applyVT=()=>vp.setAttribute('transform',`translate(${vt.x},${vt.y}) scale(${vt.k})`);
 function fitView(){vt={k:1,x:0,y:0};applyVT();const b=scene.getBBox();const pad=Math.max(b.width,b.height)*.08;
@@ -477,14 +498,30 @@ print('欢迎使用模拟路由器 R1。输入 ? 查看当前视图可用的命�
 
 /* ============ 启动 ============ */
 /* ============ 风格与探索进度 ============ */
-const SKINS=[['eng','工程蓝图','#0a7c89','#d7dde2'],['neon','霓虹机房','#19e3ff','#ff3dbb'],['blocks','积木乐园','#ff8a3d','#8c6bff'],['notebook','手账笔记','#2b59c3','#ffde59']];
+const SKINS=[
+  ['notebook','手账笔记',['#2b59c3','#ffde59','#f3f6fb'],'方格纸、手绘线条、荧光笔标题'],
+  ['anatomy','解剖图谱',['#9e2b25','#e8b4a0','#efe6d6'],'像医学解剖图：剖面、阴影线、编号引线标注'],
+  ['whiteboard','白板手绘',['#1d1d1f','#e8453c','#ffffff'],'白板马克笔，草图感，手写标注'],
+  ['chalk','黑板粉笔',['#2c4a3e','#f5e27a','#f4a3b5'],'课堂黑板，彩色粉笔勾画'],
+  ['ink','水墨国风',['#222222','#c0392b','#efece4'],'宣纸水墨，朱红印章色点缀'],
+  ['blueprint','晒图蓝图',['#0d3b78','#dbe9ff','#5fa8ff'],'工程晒图，白线描在深蓝底上'],
+  ['pixel','像素游戏',['#1d2b53','#ff004d','#ffec27'],'8-bit 复古游戏机配色'],
+  ['neon','霓虹机房',['#070b1a','#19e3ff','#ff3dbb'],'深色科幻，发光描边'],
+  ['blocks','积木乐园',['#bfe3ff','#ff8a3d','#8c6bff'],'粗描边、高饱和，板卡按类型上色'],
+  ['eng','工程素描',['#e8ecef','#0a7c89','#9ca7b0'],'冷静克制的工业设计稿']];
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const skinsEl=document.getElementById('skins');
-function setSkin(id){document.documentElement.dataset.skin=id;store.set('dc-skin',id);skinsEl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-checked',b.dataset.s===id));setTimeout(fitView,60)}
-SKINS.forEach(([id,name,a,b])=>{const btn=document.createElement('button');btn.dataset.s=id;btn.setAttribute('role','radio');btn.innerHTML=`<span class="sw" style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></span>${name}`;btn.onclick=()=>setSkin(id);skinsEl.appendChild(btn)});
+const swatch=c=>`<span class="sw" style="background:linear-gradient(135deg,${c[2]} 0 40%,${c[0]} 40% 70%,${c[1]} 70%)"></span>`;
+skinsEl.innerHTML=`<button id="skinbtn" aria-haspopup="true" aria-expanded="false"></button><div class="skinmenu" id="skinmenu" hidden role="menu"></div>`;
+const skinBtn=document.getElementById('skinbtn'),skinMenu=document.getElementById('skinmenu');
+SKINS.forEach(([id,name,c,desc])=>{const b=document.createElement('button');b.dataset.s=id;b.setAttribute('role','menuitemradio');b.innerHTML=`${swatch(c)}<span><b>${name}</b><small>${desc}</small></span>`;b.onclick=()=>{setSkin(id);skinMenu.hidden=true;skinBtn.setAttribute('aria-expanded','false')};skinMenu.appendChild(b)});
+skinBtn.onclick=e=>{e.stopPropagation();skinMenu.hidden=!skinMenu.hidden;skinBtn.setAttribute('aria-expanded',String(!skinMenu.hidden))};
+document.addEventListener('click',e=>{if(!skinsEl.contains(e.target)){skinMenu.hidden=true;skinBtn.setAttribute('aria-expanded','false')}});
+function setSkin(id){const k=SKINS.find(s=>s[0]===id)||SKINS[0];document.documentElement.dataset.skin=k[0];store.set('dc-skin',k[0]);
+  skinBtn.innerHTML=`${swatch(k[2])}风格：${k[1]} ▾`;skinMenu.querySelectorAll('button').forEach(b=>b.setAttribute('aria-checked',b.dataset.s===k[0]));setTimeout(fitView,60)}
 let seen=new Set();try{seen=new Set(JSON.parse(store.get('dc-seen')||'[]'))}catch(e){}
 function markSeen(k){if(!KB[k])return;const isNew=!seen.has(k);seen.add(k);if(isNew)store.set('dc-seen',JSON.stringify([...seen]));updXP(isNew)}
 function updXP(pop){const n=[...seen].filter(k=>KB[k]).length,t=Object.keys(KB).length;document.getElementById('xpn').textContent=`${n}/${t}`;document.getElementById('xpb').style.width=(n/t*100)+'%';
   if(pop){const x=document.getElementById('xp');x.classList.remove('pop');void x.offsetWidth;x.classList.add('pop')}}
-setSkin(SKINS.some(s=>s[0]===store.get('dc-skin'))?store.get('dc-skin'):'neon');
+setSkin(store.get('dc-skin')||'notebook');
 render({k:'chassis'},{animate:false});showInfo('chassis');
