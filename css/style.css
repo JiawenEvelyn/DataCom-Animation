@@ -174,3 +174,125 @@ pre.cfg .c{color:#7f939d}
   .pane{max-height:none}
   .caption{bottom:34px}
 }
+
+/* ============ 顶栏：探索进度 + 风格切换 ============ */
+:root{--f-display:var(--f-ui)}
+.brand b,.pane h2{font-family:var(--f-display)}
+.xp{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.xp b{font-family:var(--f-mono);color:var(--fg);font-size:12px}
+.xp i{display:block;width:72px;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.xp em{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
+.xp.pop b{animation:pop .5s ease}
+@keyframes pop{40%{transform:scale(1.35);color:var(--accent)}}
+.skins{display:flex;gap:4px;flex-wrap:wrap}
+.skins button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;cursor:pointer}
+.skins button[aria-checked="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);font-weight:700}
+.skins .sw{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+
+/* ============ 风格：霓虹机房 ============ */
+:root[data-skin="neon"]{color-scheme:dark;
+  --bg:#070b1a; --surface:#0c1330; --surface-2:#111a3d; --fg:#e6f1ff; --muted:#8a98c8; --line:#22306a;
+  --accent:#19e3ff; --accent-soft:rgba(25,227,255,.14); --hl:#ff3dbb; --ctrl:#b26bff; --ok:#3dff9a; --bad:#ff4d6d;
+  --metal-t:#1c2655; --metal-f:#141c42; --metal-s:#0f1533;
+  --panel-t:#28347a; --panel-f:#1d275e; --panel-s:#161e4b;
+  --pcb-t:#0f4140; --pcb-f:#0b302f; --pcb-s:#082323;
+  --sub-t:#33206a; --sub-f:#271852; --sub-s:#1d1240;
+  --chip-t:#181d33; --chip-f:#11152a; --chip-s:#0c0f20;
+  --sink-t:#4a5a95; --sink-f:#36437a; --sink-s:#2a3462;
+  --conn-t:#ff9a3d; --conn-f:#d97a22; --conn-s:#b06018;
+  --cage-t:#36427a; --cage-f:#2a3463; --cage-s:#202850;
+  --optic-t:#d2dcff; --optic-f:#a9b8ee; --optic-s:#8a9bd8;
+  --psu-t:#232e66; --psu-f:#1a2350; --psu-s:#141b40;
+  --recess:#04060f; --hole:#000; --ink-dark:#9fefff; --ink-light:#9fefff;
+  --led-on:#3dff9a; --led-alm:#ffc23d; --led-off:#1b2244; --fiber:#ffd23d; --shadow:rgba(25,227,255,.07);
+  --f-display:"Orbitron","ZCOOL QingKe HuangYou","Noto Sans SC",sans-serif}
+[data-skin="neon"] .stage{background:
+  radial-gradient(ellipse at 50% 60%,rgba(25,227,255,.13),transparent 60%),
+  linear-gradient(rgba(25,227,255,.07) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(25,227,255,.07) 1px,transparent 1px) 0 0/40px 40px,var(--bg)}
+[data-skin="neon"] .bx polygon{stroke:rgba(25,227,255,.5);stroke-width:.8}
+[data-skin="neon"] .led.on{filter:drop-shadow(0 0 3px #3dff9a)}
+[data-skin="neon"] .fx-dot{filter:drop-shadow(0 0 7px #fff)}
+[data-skin="neon"] .fx-trail{opacity:.9}
+[data-skin="neon"] .trace{stroke:#19e3ff;stroke-opacity:.6}
+[data-skin="neon"] .brand b{color:var(--accent);text-shadow:0 0 12px rgba(25,227,255,.6);letter-spacing:.06em}
+[data-skin="neon"] .pane h2{text-shadow:0 0 14px rgba(25,227,255,.35)}
+[data-skin="neon"] .top,[data-skin="neon"] .panel{background:rgba(12,19,48,.92)}
+[data-skin="neon"] pre.cfg{background:#040716;border:1px solid var(--line);color:#aef6ff}
+[data-skin="neon"] .flows button,[data-skin="neon"] .tools button,[data-skin="neon"] .crumbs button{background:rgba(17,26,61,.85);border-color:var(--line)}
+[data-skin="neon"] .flows button:hover,[data-skin="neon"] .tools button:hover{border-color:var(--accent);box-shadow:0 0 12px rgba(25,227,255,.35)}
+[data-skin="neon"] .crumbs button:last-child{background:var(--accent);color:#04101a;border-color:var(--accent)}
+[data-skin="neon"] .go,[data-skin="neon"] .tools button.on{color:#04101a}
+[data-skin="neon"] .xp em{box-shadow:0 0 8px var(--accent)}
+[data-skin="neon"] .sel polygon{filter:drop-shadow(0 0 4px #ff3dbb)}
+
+/* ============ 风格：积木乐园 ============ */
+:root[data-skin="blocks"]{color-scheme:light;
+  --bg:#bfe3ff; --surface:#ffffff; --surface-2:#eef6ff; --fg:#23264a; --muted:#565c8c; --line:#23264a;
+  --accent:#ff6b35; --accent-soft:#ffe2d4; --hl:#ffc400; --ctrl:#7b5cff; --ok:#14a862; --bad:#ef4136;
+  --metal-t:#ffffff; --metal-f:#e4ecff; --metal-s:#c7d4f7;
+  --panel-t:#9ad6ff; --panel-f:#56b8ff; --panel-s:#349be8;
+  --pcb-t:#5ad995; --pcb-f:#35bb75; --pcb-s:#269a5d;
+  --sub-t:#76b6ff; --sub-f:#4d97f0; --sub-s:#357ad1;
+  --chip-t:#454b80; --chip-f:#363b69; --chip-s:#2a2e56;
+  --sink-t:#ffe066; --sink-f:#ffcf26; --sink-s:#e6b400;
+  --conn-t:#ff86b4; --conn-f:#ff5c9a; --conn-s:#e23f7f;
+  --cage-t:#dfe5ff; --cage-f:#c3ccf2; --cage-s:#a7b2e0;
+  --optic-t:#ffffff; --optic-f:#eef1ff; --optic-s:#d6dcf5;
+  --psu-t:#ffe066; --psu-f:#ffcf26; --psu-s:#e6b400;
+  --recess:#23264a; --hole:#23264a; --ink-dark:#ffffff; --ink-light:#23264a;
+  --led-on:#2bff88; --led-alm:#ffb000; --led-off:#2c3060; --fiber:#ff4fa3; --shadow:rgba(35,38,74,.18);
+  --f-display:"ZCOOL KuaiLe","Noto Sans SC",sans-serif}
+[data-skin="blocks"] .stage{background:radial-gradient(circle,rgba(255,255,255,.55) 3px,transparent 3.5px) 0 0/34px 34px,var(--bg)}
+[data-skin="blocks"] .bx polygon{stroke:#23264a;stroke-width:1.6}
+[data-skin="blocks"] .type-LPU .m-panel .t{fill:#ffc097}[data-skin="blocks"] .type-LPU .m-panel .f{fill:#ff8a3d}[data-skin="blocks"] .type-LPU .m-panel .s{fill:#e66b1c}
+[data-skin="blocks"] .type-MPU .m-panel .t{fill:#c9b8ff}[data-skin="blocks"] .type-MPU .m-panel .f{fill:#8c6bff}[data-skin="blocks"] .type-MPU .m-panel .s{fill:#6c4be6}
+[data-skin="blocks"] .type-SFU .m-panel .t{fill:#a1ecc0}[data-skin="blocks"] .type-SFU .m-panel .f{fill:#33cc7a}[data-skin="blocks"] .type-SFU .m-panel .s{fill:#1fae60}
+[data-skin="blocks"] .brand b{font-size:22px;color:var(--accent);-webkit-text-stroke:.6px #23264a}
+[data-skin="blocks"] .pane h2{font-size:26px;font-weight:400}
+[data-skin="blocks"] .top{border-bottom:3px solid var(--line)}
+[data-skin="blocks"] .panel{border-left:3px solid var(--line)}
+[data-skin="blocks"] .flows button,[data-skin="blocks"] .tools button,[data-skin="blocks"] .crumbs button,[data-skin="blocks"] .btn,[data-skin="blocks"] .skins button,[data-skin="blocks"] .chips button,[data-skin="blocks"] .caption{border:2px solid #23264a;box-shadow:3px 3px 0 #23264a;border-radius:12px}
+[data-skin="blocks"] .flows button:active,[data-skin="blocks"] .tools button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #23264a}
+[data-skin="blocks"] .crumbs button:last-child{background:var(--accent);color:#fff}
+[data-skin="blocks"] .modules button.on{background:var(--accent);color:#fff;border:2px solid #23264a}
+[data-skin="blocks"] .kv{border:2px dashed #23264a;background:#fff8e1}
+[data-skin="blocks"] pre.cfg{background:#23264a;color:#fff;border-radius:12px}
+[data-skin="blocks"] .eyebrow{display:inline-block;background:var(--hl);color:#23264a;padding:0 8px;border-radius:6px;font-weight:700}
+[data-skin="blocks"] .xp i{height:10px;border:2px solid #23264a}
+[data-skin="blocks"] .fx-dot{stroke:#23264a;stroke-width:2}
+
+/* ============ 风格：手账笔记 ============ */
+:root[data-skin="notebook"]{color-scheme:light;
+  --bg:#f3f6fb; --surface:#fffefa; --surface-2:#f4f6fa; --fg:#1f2a44; --muted:#5d6984; --line:#c4cfdf;
+  --accent:#2b59c3; --accent-soft:#e1e9fb; --hl:#f2b705; --ctrl:#c2448a; --ok:#2e9e5b; --bad:#d64545;
+  --metal-t:#fbfcfe; --metal-f:#e5ebf4; --metal-s:#ccd7e8;
+  --panel-t:#dfe8f6; --panel-f:#c2d3ee; --panel-s:#a8bfe2;
+  --pcb-t:#d4f1e1; --pcb-f:#b5e4ca; --pcb-s:#98d5b3;
+  --sub-t:#d9e6fa; --sub-f:#bcd2f3; --sub-s:#a2bfeb;
+  --chip-t:#7d89a5; --chip-f:#65718d; --chip-s:#525d77;
+  --sink-t:#f1f4f9; --sink-f:#dde3ee; --sink-s:#c8d0df;
+  --conn-t:#f8df9c; --conn-f:#efcb6c; --conn-s:#dcb44c;
+  --cage-t:#eef1f7; --cage-f:#d9dfeb; --cage-s:#c3cbdc;
+  --optic-t:#ffffff; --optic-f:#f3f5f9; --optic-s:#dee3ed;
+  --psu-t:#ece4fa; --psu-f:#d9cbf3; --psu-s:#c4b1ea;
+  --recess:#8794ae; --hole:#2d3854; --ink-dark:#1f2a44; --ink-light:#1f2a44;
+  --led-on:#2e9e5b; --led-alm:#e39b12; --led-off:#b9c3d6; --fiber:#e48a2b; --shadow:rgba(31,42,68,.08);
+  --f-display:"Ma Shan Zheng","Noto Sans SC",cursive}
+[data-skin="notebook"] .stage{background:
+  linear-gradient(rgba(43,89,195,.10) 1px,transparent 1px) 0 0/24px 24px,
+  linear-gradient(90deg,rgba(43,89,195,.10) 1px,transparent 1px) 0 0/24px 24px,var(--bg)}
+[data-skin="notebook"] #scene{filter:url(#sketch)}
+[data-skin="notebook"] .bx polygon{stroke:#1f2a44;stroke-width:1.15}
+[data-skin="notebook"] .trace{stroke:#2b59c3;stroke-opacity:.5}
+[data-skin="notebook"] .ink-d,[data-skin="notebook"] .ink-l,[data-skin="notebook"] .ink-cn{font-weight:600}
+[data-skin="notebook"] .brand b{font-size:26px;font-weight:400;color:var(--accent)}
+[data-skin="notebook"] .pane h2{font-size:30px;font-weight:400;display:inline;background:linear-gradient(transparent 58%,rgba(255,214,64,.65) 58%,rgba(255,214,64,.65) 90%,transparent 90%)}
+[data-skin="notebook"] .pane{background:repeating-linear-gradient(transparent 0 27px,rgba(43,89,195,.08) 27px 28px)}
+[data-skin="notebook"] .flows button,[data-skin="notebook"] .tools button,[data-skin="notebook"] .crumbs button,[data-skin="notebook"] .caption{border:1.5px solid #1f2a44;border-radius:14px 10px 16px 9px}
+[data-skin="notebook"] .crumbs button:last-child{background:var(--accent);border-color:var(--accent);color:#fff}
+[data-skin="notebook"] pre.cfg{background:#fffefa;color:#1f2a44;border:1.5px dashed #8b97b0}
+[data-skin="notebook"] pre.cfg .c{color:#8b97b0}
+[data-skin="notebook"] .kv{background:#fff6cf;transform:rotate(-.4deg);box-shadow:2px 3px 0 rgba(31,42,68,.08)}
+[data-skin="notebook"] .pane ul li::marker{content:"✎ ";color:var(--accent)}
+[data-skin="notebook"] .modules button.on{background:none;border:none;border-bottom:3px solid var(--hl);border-radius:0;color:var(--fg)}

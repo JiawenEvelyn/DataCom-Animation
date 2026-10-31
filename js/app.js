@@ -162,7 +162,7 @@ function drawChassis(){
 }
 function drawSlot(s){
   const x0=SX(s.n),Y=D+6,px1=x0+2,px2=x0+50;
-  const g=grp(scene,{cls:'slotg',kb:s.type||'filler',id:'slot:'+s.n,go:s.type?'board:'+s.n:null,tip:s.type?`${s.n} 号槽 · ${KB[s.type].title}${s.role?'（'+s.role+'）':''}`:`${s.n} 号槽 · 空（假面板）`});
+  const g=grp(scene,{cls:'slotg type-'+(s.type||'none'),kb:s.type||'filler',id:'slot:'+s.n,go:s.type?'board:'+s.n:null,tip:s.type?`${s.n} 号槽 · ${KB[s.type].title}${s.role?'（'+s.role+'）':''}`:`${s.n} 号槽 · 空（假面板）`});
   g.classList.add('slide');
   box(g,{x:px1,y:D,z:92,w:48,d:6,h:406,mat:s.type?'panel':'metal'});
   if(!s.type){[110,480].forEach(z=>fDot(g,Y,x0+26,z,3,'screw'));fText(g,Y,x0+26,300,'空','ink-l',11,'middle');return}
@@ -343,7 +343,7 @@ window.addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTim
 const paneInfo=document.getElementById('pane-info');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let infoKey=null;
-function showInfo(key,arg){infoKey=[key,arg];const k=key==='iface'?ifKB(arg):KB[key];if(!k)return;
+function showInfo(key,arg){infoKey=[key,arg];markSeen(key==='iface'?'physif':key);const k=key==='iface'?ifKB(arg):KB[key];if(!k)return;
   let h=`<div class="eyebrow">${esc(k.tag)}</div><h2>${esc(k.title)}</h2><div class="en">${esc(k.en)}</div><p class="sum">${esc(k.sum)}</p>`;
   if(k.rows)h+=`<dl class="kv">${k.rows.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${b}</dd>`).join('')}</dl>`;
   if(k.pts&&k.pts.length)h+=`<h3>要点</h3><ul>${k.pts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`;
@@ -476,4 +476,15 @@ const chipsEl=document.getElementById('chips');
 print('欢迎使用模拟路由器 R1。输入 ? 查看当前视图可用的命令。\n试试：display device','h');
 
 /* ============ 启动 ============ */
+/* ============ 风格与探索进度 ============ */
+const SKINS=[['eng','工程蓝图','#0a7c89','#d7dde2'],['neon','霓虹机房','#19e3ff','#ff3dbb'],['blocks','积木乐园','#ff8a3d','#8c6bff'],['notebook','手账笔记','#2b59c3','#ffde59']];
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const skinsEl=document.getElementById('skins');
+function setSkin(id){document.documentElement.dataset.skin=id;store.set('dc-skin',id);skinsEl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-checked',b.dataset.s===id));setTimeout(fitView,60)}
+SKINS.forEach(([id,name,a,b])=>{const btn=document.createElement('button');btn.dataset.s=id;btn.setAttribute('role','radio');btn.innerHTML=`<span class="sw" style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></span>${name}`;btn.onclick=()=>setSkin(id);skinsEl.appendChild(btn)});
+let seen=new Set();try{seen=new Set(JSON.parse(store.get('dc-seen')||'[]'))}catch(e){}
+function markSeen(k){if(!KB[k])return;const isNew=!seen.has(k);seen.add(k);if(isNew)store.set('dc-seen',JSON.stringify([...seen]));updXP(isNew)}
+function updXP(pop){const n=[...seen].filter(k=>KB[k]).length,t=Object.keys(KB).length;document.getElementById('xpn').textContent=`${n}/${t}`;document.getElementById('xpb').style.width=(n/t*100)+'%';
+  if(pop){const x=document.getElementById('xp');x.classList.remove('pop');void x.offsetWidth;x.classList.add('pop')}}
+setSkin(SKINS.some(s=>s[0]===store.get('dc-skin'))?store.get('dc-skin'):'neon');
 render({k:'chassis'},{animate:false});showInfo('chassis');
