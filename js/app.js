@@ -578,9 +578,7 @@ const SKINS=[
   ['anatomy','解剖图谱',['#9e2b25','#e8b4a0','#efe6d6'],'像医学解剖图：剖面、阴影线、编号引线标注','Anatomy Atlas','Like a medical atlas: cutaways, hatching, numbered callouts'],
   ['whiteboard','白板手绘',['#1d1d1f','#e8453c','#ffffff'],'白板马克笔，草图感，手写标注','Whiteboard','Marker on a whiteboard, sketchy, handwritten notes'],
   ['chalk','黑板粉笔',['#2c4a3e','#f5e27a','#f4a3b5'],'课堂黑板，彩色粉笔勾画','Chalkboard','Classroom blackboard with colored chalk'],
-  ['ink','水墨国风',['#222222','#c0392b','#efece4'],'宣纸水墨，朱红印章色点缀','Ink Wash','Rice paper and ink, with vermilion seal accents'],
   ['blueprint','晒图蓝图',['#0d3b78','#dbe9ff','#5fa8ff'],'工程晒图，白线描在深蓝底上','Blueprint','White lines on deep-blue engineering prints'],
-  ['pixel','像素游戏',['#1d2b53','#ff004d','#ffec27'],'8-bit 复古游戏机配色','Pixel Game','8-bit retro console colors'],
   ['neon','霓虹机房',['#070b1a','#19e3ff','#ff3dbb'],'深色科幻，发光描边','Neon Server Room','Dark sci-fi with glowing outlines'],
   ['blocks','积木乐园',['#bfe3ff','#ff8a3d','#8c6bff'],'粗描边、高饱和，板卡按类型上色','Toy Blocks','Bold outlines, saturated colors, boards colored by type'],
   ['eng','工程素描',['#e8ecef','#0a7c89','#9ca7b0'],'冷静克制的工业设计稿','Engineering Sketch','Calm, restrained industrial design drawing']];

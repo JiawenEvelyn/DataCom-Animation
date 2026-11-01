@@ -204,7 +204,7 @@ pre.cfg .c{color:#7f939d}
 .co-dot{fill:var(--co,var(--fg))}
 .co-t{fill:var(--fg);font-family:var(--f-display);font-size:20px}
 .co-e{fill:var(--muted);font-family:var(--f-en,var(--f-mono));font-size:13px;font-style:italic}
-[data-skin="anatomy"] .callouts,[data-skin="whiteboard"] .callouts,[data-skin="chalk"] .callouts,[data-skin="ink"] .callouts,[data-skin="blueprint"] .callouts{display:inline}
+[data-skin="anatomy"] .callouts,[data-skin="whiteboard"] .callouts,[data-skin="chalk"] .callouts,[data-skin="blueprint"] .callouts{display:inline}
 .hatch-bg{fill:var(--metal-s)} .hatch-ln{stroke:rgba(0,0,0,.35);stroke-width:1.1}
 
 /* ============ 风格：霓虹机房 ============ */
@@ -413,37 +413,6 @@ pre.cfg .c{color:#7f939d}
 [data-skin="chalk"] .crumbs button:last-child{background:#f5e27a;color:#24402f}
 [data-skin="chalk"] .go,[data-skin="chalk"] .tools button.on{color:#24402f}
 
-/* ============ 风格：水墨国风 ============ */
-:root[data-skin="ink"]{color-scheme:light;
-  --bg:#efece4; --surface:#f7f5ef; --surface-2:#eeeae0; --fg:#222222; --muted:#6b675f; --line:#d3cdbf;
-  --accent:#c0392b; --accent-soft:#f3dcd6; --hl:#c0392b; --ctrl:#3e6b7a; --ok:#4a7a55; --bad:#c0392b;
-  --metal-t:rgba(34,34,34,.06); --metal-f:rgba(34,34,34,.16); --metal-s:rgba(34,34,34,.32);
-  --panel-t:rgba(34,34,34,.35); --panel-f:rgba(34,34,34,.55); --panel-s:rgba(34,34,34,.72);
-  --pcb-t:rgba(62,107,122,.18); --pcb-f:rgba(62,107,122,.3); --pcb-s:rgba(62,107,122,.45);
-  --sub-t:rgba(34,34,34,.22); --sub-f:rgba(34,34,34,.38); --sub-s:rgba(34,34,34,.52);
-  --chip-t:rgba(34,34,34,.72); --chip-f:rgba(34,34,34,.85); --chip-s:rgba(34,34,34,.92);
-  --sink-t:rgba(34,34,34,.12); --sink-f:rgba(34,34,34,.24); --sink-s:rgba(34,34,34,.36);
-  --conn-t:rgba(192,57,43,.55); --conn-f:rgba(192,57,43,.7); --conn-s:rgba(192,57,43,.82);
-  --cage-t:rgba(34,34,34,.14); --cage-f:rgba(34,34,34,.26); --cage-s:rgba(34,34,34,.38);
-  --optic-t:#faf8f3; --optic-f:#ebe6db; --optic-s:#d6cfbf;
-  --psu-t:rgba(34,34,34,.25); --psu-f:rgba(34,34,34,.42); --psu-s:rgba(34,34,34,.58);
-  --recess:rgba(34,34,34,.8); --hole:#111; --ink-dark:#f7f5ef; --ink-light:#222;
-  --led-on:#c0392b; --led-alm:#c98a2b; --led-off:rgba(255,255,255,.35); --fiber:#c0392b; --shadow:rgba(34,34,34,.06);
-  --f-display:"Zhi Mang Xing","Ma Shan Zheng",cursive; --co:#222}
-[data-skin="ink"] .stage{background:radial-gradient(ellipse at 15% 85%,rgba(34,34,34,.10),transparent 40%),radial-gradient(ellipse at 90% 15%,rgba(34,34,34,.06),transparent 35%),var(--bg)}
-[data-skin="ink"] #scene{filter:url(#sketch)}
-[data-skin="ink"] .bx polygon{stroke:rgba(20,20,20,.75);stroke-width:1}
-[data-skin="ink"] .trace{stroke:#c0392b;stroke-opacity:.5}
-[data-skin="ink"] .co-t{font-size:30px;fill:#222}
-[data-skin="ink"] .co-dot{fill:#c0392b}
-[data-skin="ink"] .brand b{font-size:30px;font-weight:400}
-[data-skin="ink"] .brand::after{content:"学";display:inline-grid;place-items:center;width:24px;height:24px;background:#c0392b;color:#f7f5ef;font-family:"Ma Shan Zheng",serif;font-size:16px;border-radius:3px;transform:rotate(-4deg)}
-[data-skin="ink"] .pane h2{font-size:34px;font-weight:400}
-[data-skin="ink"] .eyebrow{color:#c0392b}
-[data-skin="ink"] pre.cfg{background:#f7f5ef;color:#222;border-left:3px solid #c0392b;border-radius:0}
-[data-skin="ink"] .flows button,[data-skin="ink"] .tools button,[data-skin="ink"] .crumbs button,[data-skin="ink"] .caption{border-color:rgba(34,34,34,.5);border-radius:2px}
-[data-skin="ink"] .crumbs button:last-child{background:#222;color:#f7f5ef}
-
 /* ============ 风格：晒图蓝图 ============ */
 :root[data-skin="blueprint"]{color-scheme:dark;
   --bg:#0d3b78; --surface:#0b3268; --surface-2:#103f80; --fg:#e3eeff; --muted:#9fbbe6; --line:#2d5c9e;
@@ -476,37 +445,3 @@ pre.cfg .c{color:#7f939d}
 [data-skin="blueprint"] .crumbs button:last-child{background:#ffd166;color:#0b3268;border-color:#ffd166}
 [data-skin="blueprint"] .go,[data-skin="blueprint"] .tools button.on{color:#0b3268}
 [data-skin="blueprint"] .flows button,[data-skin="blueprint"] .tools button,[data-skin="blueprint"] .crumbs button,[data-skin="blueprint"] .caption{background:#0b3268;border-radius:0}
-
-/* ============ 风格：像素游戏 ============ */
-:root[data-skin="pixel"]{color-scheme:dark;
-  --bg:#1d2b53; --surface:#000000; --surface-2:#1d2b53; --fg:#fff1e8; --muted:#c2c3c7; --line:#5f574f;
-  --accent:#ff004d; --accent-soft:#7e2553; --hl:#ffec27; --ctrl:#29adff; --ok:#00e436; --bad:#ff004d;
-  --metal-t:#c2c3c7; --metal-f:#83769c; --metal-s:#5f574f;
-  --panel-t:#29adff; --panel-f:#1d6fb8; --panel-s:#1d2b53;
-  --pcb-t:#00e436; --pcb-f:#008751; --pcb-s:#065a3a;
-  --sub-t:#ff77a8; --sub-f:#c94f86; --sub-s:#7e2553;
-  --chip-t:#5f574f; --chip-f:#3a342f; --chip-s:#000;
-  --sink-t:#fff1e8; --sink-f:#c2c3c7; --sink-s:#83769c;
-  --conn-t:#ffa300; --conn-f:#ab5236; --conn-s:#7e2553;
-  --cage-t:#c2c3c7; --cage-f:#83769c; --cage-s:#5f574f;
-  --optic-t:#fff1e8; --optic-f:#c2c3c7; --optic-s:#83769c;
-  --psu-t:#ffec27; --psu-f:#ffa300; --psu-s:#ab5236;
-  --recess:#000; --hole:#000; --ink-dark:#fff1e8; --ink-light:#000;
-  --led-on:#00e436; --led-alm:#ffec27; --led-off:#5f574f; --fiber:#ffec27; --shadow:rgba(0,0,0,.35);
-  --f-display:"Press Start 2P","ZCOOL QingKe HuangYou",monospace}
-[data-skin="pixel"] body{font-family:"ZCOOL QingKe HuangYou","Noto Sans SC",sans-serif;font-size:15px}
-[data-skin="pixel"] .stage{background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px),var(--bg)}
-[data-skin="pixel"] #scene *{shape-rendering:crispEdges}
-[data-skin="pixel"] .bx polygon{stroke:#000;stroke-width:2}
-[data-skin="pixel"] .ink-d,[data-skin="pixel"] .ink-l,[data-skin="pixel"] .ink-cn{font-family:"ZCOOL QingKe HuangYou",monospace;font-weight:400}
-[data-skin="pixel"] .brand b{font-size:14px;color:#ffec27;text-shadow:3px 3px 0 #ff004d}
-[data-skin="pixel"] .pane h2{font-size:16px;line-height:1.7;color:#ffec27}
-[data-skin="pixel"] .pane h2+.en{margin-top:6px}
-[data-skin="pixel"] .top,[data-skin="pixel"] .panel{background:#000;border-color:#5f574f}
-[data-skin="pixel"] .flows button,[data-skin="pixel"] .tools button,[data-skin="pixel"] .crumbs button,[data-skin="pixel"] .caption,[data-skin="pixel"] #skinbtn,[data-skin="pixel"] #langbtn,[data-skin="pixel"] .btn{border:3px solid #fff1e8;border-radius:0;background:#000;box-shadow:4px 4px 0 #ff004d}
-[data-skin="pixel"] .crumbs button:last-child{background:#ffec27;color:#000}
-[data-skin="pixel"] pre.cfg{background:#000;border:3px solid #29adff;border-radius:0;color:#00e436}
-[data-skin="pixel"] .xp i{border-radius:0;height:10px;border:2px solid #fff1e8}
-[data-skin="pixel"] .xp em{background:repeating-linear-gradient(90deg,#00e436 0 6px,#008751 6px 8px)}
-[data-skin="pixel"] .fx-dot{stroke:#000;stroke-width:2}
-[data-skin="pixel"] .go,[data-skin="pixel"] .tools button.on{color:#000}
