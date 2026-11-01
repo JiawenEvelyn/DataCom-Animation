@@ -186,7 +186,8 @@ pre.cfg .c{color:#7f939d}
 .xp em{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
 .xp.pop b{animation:pop .5s ease}
 @keyframes pop{40%{transform:scale(1.35);color:var(--accent)}}
-.skins{position:relative}
+.skins{position:relative;display:flex;align-items:center;gap:6px}
+#langbtn{border:1px solid var(--line);background:var(--surface-2);color:inherit;border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:44px}
 #skinbtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 12px 4px 5px;font-size:12.5px;cursor:pointer;white-space:nowrap}
 .skinmenu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;width:min(560px,calc(100vw - 32px));display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .skinmenu button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid transparent;background:none;border-radius:8px;padding:8px;cursor:pointer;min-width:0}
@@ -502,7 +503,7 @@ pre.cfg .c{color:#7f939d}
 [data-skin="pixel"] .pane h2{font-size:16px;line-height:1.7;color:#ffec27}
 [data-skin="pixel"] .pane h2+.en{margin-top:6px}
 [data-skin="pixel"] .top,[data-skin="pixel"] .panel{background:#000;border-color:#5f574f}
-[data-skin="pixel"] .flows button,[data-skin="pixel"] .tools button,[data-skin="pixel"] .crumbs button,[data-skin="pixel"] .caption,[data-skin="pixel"] #skinbtn,[data-skin="pixel"] .btn{border:3px solid #fff1e8;border-radius:0;background:#000;box-shadow:4px 4px 0 #ff004d}
+[data-skin="pixel"] .flows button,[data-skin="pixel"] .tools button,[data-skin="pixel"] .crumbs button,[data-skin="pixel"] .caption,[data-skin="pixel"] #skinbtn,[data-skin="pixel"] #langbtn,[data-skin="pixel"] .btn{border:3px solid #fff1e8;border-radius:0;background:#000;box-shadow:4px 4px 0 #ff004d}
 [data-skin="pixel"] .crumbs button:last-child{background:#ffec27;color:#000}
 [data-skin="pixel"] pre.cfg{background:#000;border:3px solid #29adff;border-radius:0;color:#00e436}
 [data-skin="pixel"] .xp i{border-radius:0;height:10px;border:2px solid #fff1e8}

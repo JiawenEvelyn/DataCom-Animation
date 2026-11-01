@@ -20,6 +20,8 @@ python3 -m http.server 8000
 - **报文动画**：数据报文穿越路由器、协议报文上送与 FIB 下发、报文在接口板 NP/TM 内的处理。
 - **命令行实验**（教学模拟）：提示符和两阶段生效参考华为配置指南，配置命令先进入候选配置（`[*HUAWEI]`），`commit` 后才生效；支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack、`display configuration candidate`、`clear configuration candidate` 等，提交后的配置会反映到设备图上。
 
+- **中英文切换**：右上角一键切换界面和讲解语言，英文模式下保留中文术语对照。
+
 ## 内容约定
 
 - 知识内容尽量取自华为等厂商**公开**的官方资料（Datasheet、产品页、华为百科、在线配置指南），只做浏览访问，不下载、不搬运受限文档。
@@ -34,6 +36,7 @@ python3 -m http.server 8000
 - 颜色一律使用 `css/style.css` 中的 CSS 变量（材质 `--metal-* / --panel-* / --pcb-*`、强调色 `--accent`、控制平面 `--ctrl` 等），不要写死颜色。
 - 每种风格在 `:root[data-skin="xxx"]` 中重新定义这些变量，并可以追加少量专属效果（手绘抖动滤镜、阴影线、发光、像素描边等）。
 - 需要引线标注的部件，在 `CALLOUTS` 中登记，解剖图谱、白板、黑板、水墨、蓝图风格会自动显示编号引线。
+- 新增文字要同时提供中英文：短文案用 `L('中文','English')`，讲解条目在 `KB_EN` 里加英文版。
 - 新增风格：在 `SKINS` 数组加一项，并在 CSS 末尾加一个 `[data-skin]` 区块。
 
 ## 目录结构
