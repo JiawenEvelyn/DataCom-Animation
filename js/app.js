@@ -24,8 +24,8 @@ const SLOTS=[
   {n:7,type:'SFU'},{n:8,type:'SFU'},{n:9,type:'LPU'},{n:10,type:null}];
 const LPUS=SLOTS.filter(s=>s.type==='LPU').map(s=>s.n);
 const PICS=[{p:0,kind:'ge',name:'8×GE 光口子卡',count:8,prefix:'GigabitEthernet',kb:'pic-ge'},{p:1,kind:'100ge',name:'2×100GE 光口子卡',count:2,prefix:'100GE',kb:'pic-100ge'}];
-const IF={};let sysname='R1';
-function addIf(name,o){IF[name]=Object.assign({name,admin:true,ip:null,len:null,desc:'',kind:'phy',cable:false,parent:null,vid:null},o)}
+const IF={};let sysname='HUAWEI';
+function addIf(name,o,T=IF){T[name]=Object.assign({name,admin:true,ip:null,len:null,desc:'',kind:'phy',cable:false,parent:null,vid:null},o)}
 LPUS.forEach(n=>PICS.forEach(pc=>{for(let k=0;k<pc.count;k++)addIf(`${pc.prefix}${n}/${pc.p}/${k}`,{slot:n,pic:pc.p,port:k,speed:pc.kind==='ge'?'1Gbps':'100Gbps',optic:pc.kind==='ge'?'SFP':'QSFP28'})}));
 ['GigabitEthernet1/0/0','GigabitEthernet1/0/1','100GE1/1/0','GigabitEthernet2/0/0','100GE3/1/0','100GE9/1/0','GigabitEthernet4/0/3'].forEach(n=>IF[n].cable=true);
 Object.assign(IF['GigabitEthernet1/0/0'],{ip:'10.1.1.1',len:30,desc:'To_CE1'});
@@ -36,6 +36,8 @@ addIf('GigabitEthernet1/0/0.100',{kind:'sub',parent:'GigabitEthernet1/0/0',vid:1
 addIf('LoopBack0',{kind:'loop',ip:'1.1.1.1',len:32});
 addIf('NULL0',{kind:'null'});
 const phyUp=i=>i.kind==='phy'?(i.admin&&i.cable):i.kind==='sub'?(i.admin&&phyUp(IF[i.parent])):i.admin;
+/* 两阶段生效：命令行改的是候选配置 CIF，commit 后才写入运行配置 IF（设备图只画 IF） */
+const clone=o=>JSON.parse(JSON.stringify(o));let CIF=clone(IF),csys=sysname,pending=false;
 const protoUp=i=>phyUp(i)&&(i.kind==='null'||!!i.ip)&&(i.kind!=='sub'||!!i.vid);
 const portIf=(n,p,k)=>`${PICS[p].prefix}${n}/${p}/${k}`;
 function macOf(name){let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;const b=[0x00,0xe0,0xfc,(h>>16)&255,(h>>8)&255,h&255].map(v=>v.toString(16).padStart(2,'0'));return `${b[0]}${b[1]}-${b[2]}${b[3]}-${b[4]}${b[5]}`}
@@ -44,7 +46,8 @@ function macOf(name){let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;co
 const KB={
 chassis:{tag:'整机',title:'框式路由器',en:'Chassis-based Router',
   sum:'骨干网和城域核心常用的大容量设备。整机由机框、背板、各类单板、电源和风扇组成。单板插在槽位里，通过机框里的背板互相连通。',
-  pts:['控制平面和转发平面分离：主控板 MPU 负责"想"，运行路由协议、算出路由；接口板 LPU 负责"做"，按转发表把报文送出去。','分布式转发：每块接口板都有自己的转发芯片和转发表，普通报文不经过主控板。','关键部件都有冗余：主控 1:1 主备，交换网板 N+1，电源 N+N，风扇多组。','和它相对的是盒式设备：端口固定、没有可插拔单板，结构简单但扩展性差。'],
+  pts:['控制平面和转发平面分离：主控板 MPU 负责"想"，运行路由协议、算出路由；接口板 LPU 负责"做"，按转发表把报文送出去。','分布式转发：每块接口板都有自己的转发芯片和转发表，普通报文不经过主控板。','关键部件都有冗余：主控 1:1 主备，交换网板 N+1，电源和风扇也有备份。','和它相对的是盒式设备：端口固定、没有可插拔单板，结构简单但扩展性差。','参考机型 NetEngine 8000 X8：高 15.8U，共 18 个槽位，其中 8 个业务槽；主控 1:1，交换网 7+1，电源模块最多 10 个（N+1），3 个风扇组件。本演示的机框是简化画法，槽位布局不对应真机。'],
+  src:[['NetEngine 8000E X 系列 Datasheet（华为公开资料）','https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1d4cffa4149c4a9ab9ef95a563156690/M3T1A590N1110310507990728778/NetEngine%208000E%20X%20Series%20Router%20Datasheet%20V8R024C10.pdf']],
   cfg:['display device','display version'],note:'display device 是认识一台新设备的第一条命令，能看到每个槽位插了什么板、是否在位、是否正常。'},
 slot:{tag:'结构',title:'槽位',en:'Slot',sum:'机框上插单板的位置。槽位号就是接口名称里的第一个数字，例如 GigabitEthernet1/0/0 在 1 号槽。',
   pts:['槽位有用途约束：主控槽只能插主控板，接口板槽只能插接口板。','没有插板的槽位要装假面板，保证风道正常、防止灰尘进入。','本演示为了好看把所有板都画在前面，很多真实设备的交换网板在机框背面。']},
@@ -58,47 +61,47 @@ MPU:{tag:'单板',title:'主控板 MPU',en:'Main Processing Unit',
   cfg:['display device'],drill:'点击单板查看内部'},
 SFU:{tag:'单板',title:'交换网板 SFU',en:'Switch Fabric Unit',
   sum:'负责接口板之间的报文交换。报文从一块接口板进来、要从另一块接口板出去时，就要经过交换网板。',
-  pts:['入口接口板把报文切成固定长度的"信元"，交换网板按信元做无阻塞交换，出口接口板再重组成报文。','多块交换网板负荷分担，常见 N+1 冗余，坏一块不影响业务，只是总交换容量下降。','整机交换容量 = 交换网板能提供的总带宽，是设备选型的重要指标。'],drill:'点击单板查看内部'},
+  pts:['入口接口板把报文切成固定长度的"信元"，交换网板按信元做无阻塞交换，出口接口板再重组成报文。','多块交换网板负荷分担，常见 N+1 冗余，坏一块不影响业务，只是总交换容量下降。','交换网板的总交换能力决定了整机能转发多少流量，是设备选型的重要指标。','参考：NetEngine 8000 X8 的交换网板是 7+1 备份。'],src:[['NetEngine 8000E X 系列 Datasheet','https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1d4cffa4149c4a9ab9ef95a563156690/M3T1A590N1110310507990728778/NetEngine%208000E%20X%20Series%20Router%20Datasheet%20V8R024C10.pdf']],drill:'点击单板查看内部'},
 filler:{tag:'结构',title:'假面板',en:'Filler Panel',sum:'空槽位上的挡板。它不是可有可无的装饰：没有它，风会从空槽位"短路"流走，其他单板散热就会变差。',pts:['10 号槽当前为空，display device 中会显示 Absent。']},
-power:{tag:'部件',title:'电源模块',en:'Power Supply Unit',sum:'为整机供电，支持交流或直流（机房常用 -48V 直流）。',pts:['常见 N+N 冗余：两路独立供电，各接一半电源模块，一路断电设备照常运行。','电源模块支持热插拔，可以在线更换。']},
-fan:{tag:'部件',title:'风扇框',en:'Fan Tray',sum:'负责整机散热。风道一般是前进后出或左进右出，机房摆放时要保证风道方向一致。',pts:['风扇转速随温度自动调节。','风扇故障会产生告警，长时间高温可能导致单板复位。']},
+power:{tag:'部件',title:'电源模块',en:'Power Supply Unit',sum:'为整机供电，支持交流或直流（机房常用 -48V 直流）。',pts:['冗余方式常见 N+1（多一个备用模块）或 N+N（两路独立供电各带一半模块）。','电源模块一般支持热插拔，可以在线更换。','参考：NetEngine 8000 X8 最多 10 个电源模块，N+1 备份；支持 DC -48/-60V、AC 200~240V、HVDC 240/380V 输入。'],src:[['NetEngine 8000E X 系列 Datasheet','https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1d4cffa4149c4a9ab9ef95a563156690/M3T1A590N1110310507990728778/NetEngine%208000E%20X%20Series%20Router%20Datasheet%20V8R024C10.pdf']]},
+fan:{tag:'部件',title:'风扇框',en:'Fan Tray',sum:'负责整机散热。风道一般是前进后出或左进右出，机房摆放时要保证风道方向一致。',pts:['风扇转速随温度自动调节。','风扇故障会产生告警，长时间高温可能导致单板复位。','参考：NetEngine 8000 X8 有 3 个风扇组件，风道前进后出。'],src:[['NetEngine 8000E X 系列 Datasheet','https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1d4cffa4149c4a9ab9ef95a563156690/M3T1A590N1110310507990728778/NetEngine%208000E%20X%20Series%20Router%20Datasheet%20V8R024C10.pdf']]},
 backplane:{tag:'结构',title:'背板',en:'Backplane',sum:'机框内部的一块大电路板，所有单板插上去后通过它互联。背板上走两类通道：业务数据通道（接口板 ↔ 交换网板）和管理控制通道（主控板 ↔ 各单板）。',pts:['打开右上角的透视按钮可以看到它。','背板一般是无源的，几乎不会坏，所以整机可靠性很高。']},
-np:{tag:'芯片',title:'网络处理器 NP',en:'Network Processor',sum:'接口板上最核心的转发芯片，属于转发平面。每个报文都要经过它。',
+np:{tag:'芯片 · 通用原理示意',title:'网络处理器 NP',en:'Network Processor',sum:'接口板上最核心的转发芯片，属于转发平面。每个报文都要经过它。',
   pts:['解析：读出报文的二层头、IP 头、MPLS 标签、SRv6 SID 等。','查表：用目的地址查 FIB，得到出接口和下一跳；还会查 ACL、QoS 策略。','修改：TTL 减 1，重写二层头，压入或弹出标签。','NP 是可编程的，新特性往往靠升级微码支持；ASIC 速度更快但不灵活。']},
-tm:{tag:'芯片',title:'流量管理芯片 TM',en:'Traffic Manager',sum:'负责报文的排队、调度和整形。端口带宽不够用时，它决定谁先走、谁等待、谁被丢弃。',pts:['每个端口有多个优先级队列（常见 8 个），对应不同业务等级。','调度方式有 SP（严格优先）、WFQ（加权公平）等。','后面的 QoS 课程讲的拥塞管理、拥塞避免、流量整形，都是在这里执行的。']},
-lcpu:{tag:'芯片',title:'接口板 CPU',en:'Line Card CPU',sum:'接口板自己的管理处理器。它接收主控板下发的路由表项、ACL 等，并写进 NP 和表项存储；同时上报本板状态。',pts:['它不参与逐包转发，转发由 NP 完成。']},
-tcam:{tag:'芯片',title:'表项存储 TCAM',en:'Ternary CAM / SRAM',sum:'存放 FIB、ACL、MAC 表等转发表项。TCAM 能在一个时钟周期内完成最长前缀匹配。',pts:['它的容量决定了设备能支持多少条路由，叫做"FIB 规格"。','全网路由（Internet 路由表）已超过 100 万条，对表项容量要求很高。']},
+tm:{tag:'芯片 · 通用原理示意',title:'流量管理芯片 TM',en:'Traffic Manager',sum:'负责报文的排队、调度和整形。端口带宽不够用时，它决定谁先走、谁等待、谁被丢弃。',pts:['每个端口有多个优先级队列（常见 8 个），对应不同业务等级。','调度方式有 SP（严格优先）、WFQ（加权公平）等。','后面的 QoS 课程讲的拥塞管理、拥塞避免、流量整形，都是在这里执行的。']},
+lcpu:{tag:'芯片 · 通用原理示意',title:'接口板 CPU',en:'Line Card CPU',sum:'接口板自己的管理处理器。它接收主控板下发的路由表项、ACL 等，并写进 NP 和表项存储；同时上报本板状态。',pts:['它不参与逐包转发，转发由 NP 完成。']},
+tcam:{tag:'芯片 · 通用原理示意',title:'表项存储 TCAM',en:'Ternary CAM / SRAM',sum:'存放 FIB、ACL、MAC 表等转发表项。TCAM 能在一个时钟周期内完成最长前缀匹配。',pts:['它的容量决定了设备能支持多少条路由，叫做"FIB 规格"。','互联网全路由的规模在百万条量级，对表项容量要求很高。']},
 conn:{tag:'结构',title:'背板连接器',en:'Backplane Connector',sum:'单板和背板对接的高速连接器。单板插到位后，业务数据和管理信号都从这里进出。',pts:['单板热插拔时，连接器的长短针设计保证先接地、再通电，避免冲击。']},
-mem:{tag:'芯片',title:'内存',en:'DDR Memory',sum:'主控 CPU 的内存，存放路由协议的数据库（如 OSPF 的 LSDB、BGP 的路由表）。路由规模越大，占用越多。',pts:[]},
-flash:{tag:'芯片',title:'存储器',en:'Flash / SSD',sum:'保存系统软件和配置文件。执行 save 后，配置写入这里，重启后不丢失。',pts:['当前运行的配置叫 current-configuration，保存下来的叫 saved-configuration。'],cfg:['display current-configuration'],note:'演示版没有实现 save 命令。'},
-clock:{tag:'芯片',title:'时钟模块',en:'Clock Module',sum:'为整机提供时钟和时间同步，支持 1588v2、同步以太网等。5G 承载网对时间同步要求很高。',pts:[]},
+mem:{tag:'芯片 · 通用原理示意',title:'内存',en:'DDR Memory',sum:'主控 CPU 的内存，存放路由协议的数据库（如 OSPF 的 LSDB、BGP 的路由表）。路由规模越大，占用越多。',pts:[]},
+flash:{tag:'芯片 · 通用原理示意',title:'存储器',en:'Flash / SSD',sum:'保存系统软件和配置文件。执行 save 后，配置写入这里，重启后不丢失。',pts:['当前运行的配置叫 current-configuration，保存下来的叫 saved-configuration。'],cfg:['display current-configuration'],note:'演示版没有实现 save 命令。'},
+clock:{tag:'芯片 · 通用原理示意',title:'时钟模块',en:'Clock Module',sum:'为整机提供时钟和时间同步，支持 1588v2、同步以太网等。5G 承载网对时间同步要求很高。',pts:[]},
 mgmt:{tag:'接口',title:'管理接口',en:'Console / MGMT ETH / USB',sum:'Console 口用串口线直连，开局或网络不通时救命用；管理网口用于带外管理（网管系统通过它管理设备）；USB 口可以用来开局或升级。',pts:['带外管理：管理流量和业务流量分开，业务网络故障时仍能登录设备。','网管平台可以走管理口做带外管理，也可以通过业务网络里的 LoopBack 地址做带内管理。']},
-swchip:{tag:'芯片',title:'交换芯片',en:'Switch Fabric Chip',sum:'交换网板上的核心芯片，把来自各接口板的信元交换到目标接口板。',pts:['常见的是 Crossbar 或多级 CLOS 架构。']},
+swchip:{tag:'芯片 · 通用原理示意',title:'交换芯片',en:'Switch Fabric Chip',sum:'交换网板上的核心芯片，把来自各接口板的信元交换到目标接口板。',pts:['常见的是 Crossbar 或多级 CLOS 架构。']},
 dcdc:{tag:'部件',title:'板载电源',en:'DC/DC Converter',sum:'把背板送来的电压转换成芯片需要的各种低电压。',pts:[]},
 'pic-ge':{tag:'子卡',title:'8×GE 光口子卡',en:'Physical Interface Card',sum:'插在接口板上的子卡，提供 8 个千兆以太网 SFP 光口。子卡号是接口名称的第二个数字：GigabitEthernet1/0/3 就在 1 号槽 0 号子卡的第 3 个口。',
   pts:['同一块接口板可以插不同的子卡，灵活组合端口类型。','子卡上的 PHY/MAC 芯片负责物理层和二层的收发。','子卡一般支持热插拔。'],cfg:['display interface brief'],drill:'点击子卡查看端口'},
 'pic-100ge':{tag:'子卡',title:'2×100GE 光口子卡',en:'Physical Interface Card',sum:'提供 2 个 100G 以太网 QSFP28 光口，一般用于设备之间的骨干互联。',pts:['100GE 端口可以用拆分线缆拆成 4×25GE 使用（依设备支持情况）。','接口名称以 100GE 开头，如 100GE1/1/0。'],cfg:['display interface brief'],drill:'点击子卡查看端口'},
-phy:{tag:'芯片',title:'PHY / MAC 芯片',en:'PHY & MAC',sum:'PHY 负责物理层：把电信号和比特流互相转换、做编码。MAC 负责二层：把比特流组装成以太网帧，检查 FCS 校验和。',pts:['端口的 PHY 状态（up/down）就是这里检测到的链路信号。','CRC 错包计数也在这里统计，是排查链路质量的重要依据。']},
+phy:{tag:'芯片 · 通用原理示意',title:'PHY / MAC 芯片',en:'PHY & MAC',sum:'PHY 负责物理层：把电信号和比特流互相转换、做编码。MAC 负责二层：把比特流组装成以太网帧，检查 FCS 校验和。',pts:['端口的 PHY 状态（up/down）就是这里检测到的链路信号。','CRC 错包计数也在这里统计，是排查链路质量的重要依据。']},
 port:{tag:'接口',title:'物理端口',en:'Port',sum:'子卡面板上的插槽，插入光模块后接上光纤就成为一条物理链路的一端。',pts:['端口是硬件，接口是软件里对它的抽象。配置都是针对接口做的。','指示灯亮表示物理层 up。'],drill:'点击端口查看接口'},
 optic:{tag:'部件',title:'光模块',en:'Optical Transceiver',sum:'把电信号转成光信号发出去，再把收到的光转回电信号。',
-  pts:['封装：SFP（1G）、SFP+（10G）、SFP28（25G）、QSFP28（100G）、QSFP-DD（400G）。','类型：多模（短距离，几百米）和单模（长距离，10km 到 80km）。','两端光模块的速率和波长要匹配。','收发光功率是判断链路好坏的关键指标。'],cfg:['display transceiver interface GigabitEthernet1/0/0']},
+  pts:['封装：SFP（1G）、SFP+（10G）、SFP28（25G）、QSFP28（100G）、QSFP-DD（400G/800G）。','类型：多模（短距离，几百米）和单模（长距离，10km 到 80km）。','两端光模块的速率和波长要匹配。','收发光功率是判断链路好坏的关键指标。'],cfg:['display transceiver interface GigabitEthernet1/0/0']},
 fiber:{tag:'链路',title:'光纤',en:'Fiber',sum:'承载光信号的物理介质。黄色外皮通常是单模光纤，橙色或水绿色通常是多模光纤。',pts:['常见接头：LC（小方头，最常用）、SC（大方头）、MPO（多芯，用于 100G/400G 并行光）。','一条链路两端的设备端口通过光纤相连，在拓扑里就是一条"物理链路"。']},
 ifname:{tag:'概念',title:'接口命名规则',en:'Interface Naming',sum:'接口名 = 接口类型 + 槽位号/子卡号/端口号。读懂它，就能从一个名字直接定位到机框上的物理位置。',
-  pts:['GigabitEthernet：千兆以太网；100GE：100G 以太网；Eth-Trunk：链路聚合；LoopBack：环回。','槽位号：板插在机框的哪个槽。','子卡号：板上的哪块子卡，从 0 开始。','端口号：子卡上的第几个口，从 0 开始。','子接口在后面加点和编号：GigabitEthernet1/0/0.100。']},
+  pts:['物理接口类型名如 GigabitEthernet、10GE、25GE、50GE、100GE、400GE，还有 50|100GE（默认 50G，可切到 100G）。','逻辑接口如 Eth-Trunk（链路聚合）、LoopBack（环回）、NULL0、Tunnel。','槽位号：板插在机框的哪个槽。','子卡号：板上的哪块子卡，从 0 开始。','端口号：子卡上的第几个口，从 0 开始。','子接口在后面加点和编号：GigabitEthernet1/0/0.100。','华为配置指南里的例子是 GigabitEthernet0/2/0、100GE0/1/0。槽位号从 0 还是 1 开始因设备而异，本演示从 1 开始（示意）。'],src:[['NetEngine 8000 配置指南：接口管理','https://support.huawei.com/enterprise/en/doc/EDOC1100335691/40b0decd/interface-management-configuration']]},
 physif:{tag:'接口',title:'物理接口与状态',en:'Physical Interface',sum:'接口有两个状态。PHY（物理状态）：光信号正常就 up。Protocol（协议状态）：链路层协商成功、配置了 IP 等条件满足后才 up。',
   pts:['PHY down：多半是没插光纤、光模块坏、对端没开、光功率不够。','*down：管理员执行了 shutdown，接口被手动关掉。','PHY up 但 Protocol down：物理通了，但上层没起来，例如没配 IP 或两端封装不一致。','本演示中 Protocol up 的简化条件是：PHY up 且配置了 IP 地址。'],
-  cfg:['display interface brief','system-view','interface GigabitEthernet1/0/1','undo shutdown','display this'],note:'GigabitEthernet1/0/1 插了光纤但被 shutdown，执行 undo shutdown 后它会 up，左侧端口灯会亮。'},
+  cfg:['display interface brief','system-view','interface GigabitEthernet1/0/1','undo shutdown','commit','display this'],note:'GigabitEthernet1/0/1 插了光纤但被 shutdown，执行 undo shutdown 并 commit 后它会 up，左侧端口灯会亮。'},
 mac:{tag:'概念',title:'数据链路层',en:'Ethernet / MAC',sum:'以太网接口有自己的 MAC 地址，同一链路上的设备用 MAC 地址互相找到对方。MTU 决定一个帧最多能装多少字节（默认 1500）。',pts:['三层转发时，路由器每转发一跳都会重写二层头：源 MAC 换成自己出接口的 MAC，目的 MAC 换成下一跳的 MAC。','两端 MTU 不一致会导致大包丢失，OSPF 邻居也可能起不来。']},
 l2l3:{tag:'概念',title:'三层接口',en:'Layer-3 Interface',sum:'配置了 IP 地址的接口就是三层接口，路由器靠它们参与 IP 转发和路由协议。',pts:['接口 IP 和掩码决定了"直连路由"：配好 10.1.1.1/30，路由表里就自动出现 10.1.1.0/30。','/30 掩码只有 2 个可用地址，正好给点到点链路两端使用。','有的接口可以在二层（交换）和三层（路由）之间切换，路由器上默认一般是三层。'],
-  cfg:['system-view','interface GigabitEthernet1/0/2','ip address 10.1.2.1 255.255.255.252','display this','quit','display ip interface brief'],note:'GigabitEthernet1/0/2 没插光纤，所以即使配了 IP，Protocol 仍然是 down。'},
+  cfg:['system-view','interface GigabitEthernet1/0/2','ip address 10.1.2.1 255.255.255.252','commit','display this','quit','display ip interface brief'],note:'GigabitEthernet1/0/2 没插光纤，所以即使配了 IP，Protocol 仍然是 down。'},
 subif:{tag:'接口',title:'子接口',en:'Sub-interface',sum:'把一个物理接口按 VLAN 拆成多个逻辑接口，每个子接口有自己的 IP、可以属于不同的 VPN。这是 PE 设备接入多个客户的常见做法。',
   pts:['子接口编号写在点后面，通常和 VLAN 号保持一致，方便维护。','dot1q termination vid 100：表示这个子接口只接收、只发送 VLAN 100 的帧。','物理接口 down 了，它下面的所有子接口都会 down。','后续 L3VPN 课程会把子接口绑定到 VPN 实例。'],
-  cfg:['system-view','interface GigabitEthernet1/0/0.200','dot1q termination vid 200','ip address 192.168.200.1 24','display this'],note:'执行后左侧接口视图会多出一个子接口。'},
+  cfg:['system-view','interface GigabitEthernet1/0/0.200','dot1q termination vid 200','ip address 192.168.200.1 24','commit','display this'],note:'commit 后左侧接口视图会多出一个子接口。'},
 loopback:{tag:'接口',title:'LoopBack 接口',en:'Loopback Interface',sum:'纯软件的逻辑接口，只要设备在运行它就一直 up，不受任何物理链路影响。',
-  pts:['常用作 Router ID、BGP 邻居地址、网管系统登录地址，因为它最稳定。','掩码一般用 /32。'],cfg:['system-view','interface LoopBack1','ip address 2.2.2.2 32','quit','display ip interface brief']},
+  pts:['常用作 Router ID、BGP 邻居地址、设备管理地址，因为它最稳定。','掩码一般用 /32。'],src:[['NetEngine 8000 配置指南：接口管理','https://support.huawei.com/enterprise/en/doc/EDOC1100335691/40b0decd/interface-management-configuration']],cfg:['system-view','interface LoopBack1','ip address 2.2.2.2 32','commit','quit','display ip interface brief']},
 trunk:{tag:'接口',title:'Eth-Trunk 链路聚合',en:'Link Aggregation',sum:'把多条物理链路捆绑成一条逻辑链路，带宽叠加，一条断了其他的继续工作。',pts:['成员口的速率、双工要一致。','LACP 模式会和对端协商，比手工模式更安全。','流量按 hash 分担到成员口上，单条流只会走一个成员口。'],cfg:['interface Eth-Trunk1','trunkport GigabitEthernet 2/0/0 to 2/0/1','mode lacp-static'],run:false,note:'演示版命令行暂不支持 Eth-Trunk，这里只做配置展示。'},
 tunnel:{tag:'接口',title:'Tunnel 接口',en:'Tunnel Interface',sum:'隧道的逻辑接口，比如 MPLS TE 隧道、GRE 隧道。报文进入 Tunnel 接口后会被封装上新的头部，沿着隧道路径走。',pts:['后续的静态/动态隧道、SRv6 Policy 课程会详细展开。'],run:false},
-null0:{tag:'接口',title:'NULL0 接口',en:'Null Interface',sum:'"黑洞"接口，发往它的报文全部丢弃。常用于路由汇总时防环，或者过滤某些目的地址的流量。',pts:['NULL0 永远 up，不能配置 IP。']},
+null0:{tag:'接口',title:'NULL0 接口',en:'Null Interface',sum:'"黑洞"接口，发往它的报文全部丢弃。系统自动创建，常用于防止路由环路，或者过滤某些目的地址的流量。',pts:['NULL0 永远 up，不能配置 IP。'],src:[['NetEngine 8000 配置指南：接口管理','https://support.huawei.com/enterprise/en/doc/EDOC1100335691/40b0decd/interface-management-configuration']]},
 vpnpre:{tag:'预告',title:'绑定 VPN 实例',en:'ip binding vpn-instance',sum:'接口（或子接口）绑定到 VPN 实例后，它的路由就进入这个 VPN 自己的路由表，和其他客户隔离。这是 L3VPN 的起点。',pts:['在 L3VPN 课程中会用动画演示两个客户使用同一网段也互不干扰。'],run:false,cfg:['ip vpn-instance vpna',' ipv4-family','  route-distinguisher 100:1','interface GigabitEthernet1/0/0.100',' ip binding vpn-instance vpna']},
 };
 
@@ -132,7 +135,7 @@ function render(v,{fit=true,animate=true}={}){
 function viewKB(v){if(v.k==='chassis')return['chassis'];if(v.k==='board')return[slotOf(v.n).type];if(v.k==='sub')return[PICS[v.p].kb];return['iface',v.name]}
 const slotOf=n=>SLOTS.find(s=>s.n===n);
 
-function crumbs(){const c=document.getElementById('crumbs');c.innerHTML='';const items=[['机框 R1',{k:'chassis'}]];
+function crumbs(){const c=document.getElementById('crumbs');c.innerHTML='';const items=[[`机框 ${sysname}`,{k:'chassis'}]];
   if(view.k!=='chassis'){const n=view.n??IF[view.name]?.slot;if(n){items.push([`${n} 号槽 · ${slotOf(n).type}`,{k:'board',n}])}}
   if(view.k==='sub'||(view.k==='port'&&IF[view.name]?.kind==='phy')){const i=IF[view.name];const n=view.n??i.slot,p=view.p??i.pic;items.push([`${p} 号子卡`,{k:'sub',n,p}])}
   if(view.k==='port')items.push([view.name,view]);
@@ -372,6 +375,8 @@ function showInfo(key,arg){infoKey=[key,arg];markSeen(key==='iface'?'physif':key
   else if(k.note)h+=`<div class="note">${esc(k.note)}</div>`;
   if(k.links)h+=`<h3>相关概念</h3><div class="chips">${k.links.map(([a,b])=>`<button data-k="${a}">${esc(b)}</button>`).join('')}</div>`;
   if(k.drill)h+=`<div class="note" style="margin-top:14px">↖ ${esc(k.drill)}</div>`;
+  if(k.src)h+=`<h3>参考资料</h3><ul class="src">${k.src.map(([t,u])=>`<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join('')}</ul>`;
+  h+=`<p class="disclaimer">个人学习项目，非华为官方内容。参数参考华为公开资料；标注「通用原理示意」的部分讲的是行业通用原理，不代表某款设备的具体实现。</p>`;
   paneInfo.innerHTML=h;
   const rb=document.getElementById('runcfg');if(rb)rb.onclick=()=>{setTab('cli');runLines(k.cfg)};
   paneInfo.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>showInfo(b.dataset.k));
@@ -436,7 +441,10 @@ function jump(i){cancelAnimationFrame(A.raf);clearTimeout(A.to);A.si=i;if(i===0)
 /* ============ 命令行 ============ */
 const out=document.getElementById('out'),cmd=document.getElementById('cmd'),promptEl=document.getElementById('prompt');
 let mode='user',curIf=null;const hist=[];let hi=0;
-const prompt=()=>mode==='user'?`<${sysname}>`:mode==='sys'?`[${sysname}]`:`[${sysname}-${curIf}]`;
+const prompt=()=>{const f=pending?'*':'~';return mode==='user'?`<${sysname}>`:mode==='sys'?`[${f}${sysname}]`:`[${f}${sysname}-${curIf}]`};
+function stageCfg(){pending=true;promptEl.textContent=prompt()}
+function commitCfg(){Object.keys(IF).forEach(k=>{if(!CIF[k])delete IF[k]});Object.entries(clone(CIF)).forEach(([k,v])=>IF[k]=v);sysname=csys;pending=false;refresh()}
+function candDiff(){const L=[];if(csys!==sysname)L.push(`sysname ${csys}`,'#');Object.values(CIF).forEach(i=>{const a=ifCfg(i).join('\n'),b=IF[i.name]?ifCfg(IF[i.name]).join('\n'):null;if(a!==b){L.push(...ifCfg(i),'#')}});return L}
 function print(s,cls){const span=document.createElement('span');if(cls)span.className=cls;span.textContent=s+'\n';out.appendChild(span);out.scrollTop=out.scrollHeight}
 const len2mask=l=>{const m=l?(0xffffffff<<(32-l))>>>0:0;return [24,16,8,0].map(s=>(m>>>s)&255).join('.')};
 function mask2len(m){if(/^\d+$/.test(m)){const n=+m;return n>=0&&n<=32?n:null}const p=m.split('.').map(Number);if(p.length!==4||p.some(v=>isNaN(v)||v<0||v>255))return null;const b=p.reduce((a,v)=>a*256+v,0).toString(2).padStart(32,'0');return /^1*0*$/.test(b)?b.indexOf('0')===-1?32:b.indexOf('0'):null}
@@ -460,33 +468,36 @@ function exec(line){const raw=line.trim();print(prompt()+raw,'p');if(!raw)return
       print(`${n} current state : ${i.admin?phyUp(i)?'UP':'DOWN':'Administratively DOWN'}\nLine protocol current state : ${protoUp(i)?'UP':'DOWN'}\nDescription: ${i.desc||''}\nRoute Port,The Maximum Transmit Unit is 1500\nInternet Address is ${i.ip?i.ip+'/'+i.len:'not configured'}\nIP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is ${macOf(i.parent||n)}${i.speed?`\nPort BW: ${i.speed.replace('bps','')}, Transceiver: ${i.cable?i.optic:'absent'}`:''}`);return}
     if(kw(a,'transceiver',2)){const n=normIf(t.slice(3).join(''));const i=IF[n];if(!i||i.kind!=='phy'){err('Error: Wrong parameter found at \'^\' position.');return}if(!i.cable){print(`${n} transceiver information:\nThe transceiver is absent.`);return}
       print(`${n} transceiver information:\n-------------------------------------------\n Transceiver Type      : ${i.optic==='SFP'?'1000_BASE_LX_SFP':'100GBASE_LR4_QSFP28'}\n Connector Type        : LC\n Wavelength(nm)        : ${i.optic==='SFP'?'1310':'1295/1300/1304/1309'}\n Transfer Distance(m)  : 10000(9um)\n Current Rx Power(dBm) : -5.62\n Current Tx Power(dBm) : -2.31\n Default Rx Power High Threshold(dBm) : 0.50\n Default Rx Power Low  Threshold(dBm) : -20.00`);return}
-    if(kw(a,'this',2)){if(mode==='if')ifCfg(IF[curIf]).concat(['#','return']).forEach(l=>print(l));else if(mode==='sys')print(`#\n sysname ${sysname}\n#\nreturn`);else err();return}
+    if(kw(a,'this',2)){if(mode==='if')(IF[curIf]?ifCfg(IF[curIf]):[`interface ${curIf}`]).concat(['#','return']).forEach(l=>print(l));else if(mode==='sys')print(`#\n sysname ${sysname}\n#\nreturn`);else err();return}
     if(kw(a,'current-configuration',3)){print(`#\nsysname ${sysname}\n#`);sortIfs().filter(i=>i.ip||i.desc||!i.admin||i.kind!=='phy').forEach(i=>{ifCfg(i).forEach(l=>print(l));print('#')});print('return');return}
+    if(kw(a,'configuration',3)&&kw(t[2],'candidate',2)){if(mode==='user'){err();return}const L=candDiff();if(!L.length)print('（教学模拟）当前没有未提交的配置。','h');else{print('#');L.forEach(l=>print(l));print('return')}return}
     err();return}
   if(kw(t0,'system-view',3)){if(mode==='user'){mode='sys';print('Enter system view, return user view with return command.','h')}return}
-  if(kw(t0,'return',3)){mode='user';curIf=null;return}
+  if(kw(t0,'return',3)){mode='user';curIf=null;if(pending)print('提示（教学模拟）：还有未提交的配置，回到系统视图执行 commit 才会生效。','h');return}
   if(kw(t0,'quit',1)){if(mode==='if'){mode='sys';curIf=null}else if(mode==='sys')mode='user';return}
   if(mode==='user'){err();return}
-  if(kw(t0,'sysname',3)&&mode==='sys'&&t[1]){sysname=t[1].slice(0,30);refresh();return}
+  if(kw(t0,'commit',3)){if(pending){commitCfg();print('（教学模拟）配置已提交生效，左侧设备图已更新。','h')}return}
+  if(kw(t0,'clear',2)&&kw(t[1],'configuration',3)&&kw(t[2],'candidate',2)){CIF=clone(IF);csys=sysname;pending=false;if(mode==='if'&&!CIF[curIf]){mode='sys';curIf=null}print('（教学模拟）未提交的配置已清除。','h');return}
+  if(kw(t0,'sysname',3)&&mode==='sys'&&t[1]){csys=t[1].slice(0,30);stageCfg();return}
   if(kw(t0,'interface',3)){const n=normIf(t.slice(1).join(''));if(!n){err('Error: Wrong parameter found at \'^\' position.');return}
-    if(!IF[n]){const base=n.split('.')[0];if(n.includes('.')&&IF[base]&&IF[base].kind==='phy'){addIf(n,{kind:'sub',parent:base})}else if(/^LoopBack\d+$/.test(n)){addIf(n,{kind:'loop'})}else if(n.startsWith('Eth-Trunk')){err('Info: 演示版暂不支持 Eth-Trunk。');return}else{err(`Error: 接口 ${n} 不存在。本机接口板在 ${LPUS.join('、')} 号槽，GE 端口 0-7，100GE 端口 0-1。`);return}refresh()}
+    if(!CIF[n]){const base=n.split('.')[0];if(n.includes('.')&&CIF[base]&&CIF[base].kind==='phy'){addIf(n,{kind:'sub',parent:base},CIF)}else if(/^LoopBack\d+$/.test(n)){addIf(n,{kind:'loop'},CIF)}else if(n.startsWith('Eth-Trunk')){err('Info: 演示版暂不支持 Eth-Trunk。');return}else{err(`Error: 接口 ${n} 不存在。本机接口板在 ${LPUS.join('、')} 号槽，GE 端口 0-7，100GE 端口 0-1。`);return}stageCfg()}
     mode='if';curIf=n;return}
   if(mode!=='if'){err();return}
-  const i=IF[curIf];const undo=kw(t0,'undo',2);const c=undo?t.slice(1):t;
-  if(kw(c[0],'shutdown',4)){if(i.kind==='null'){err('Error: NULL 接口不支持该操作。');return}i.admin=undo;refresh();return}
-  if(kw(c[0],'description',4)){i.desc=undo?'':c.slice(1).join(' ').slice(0,60);refresh();return}
+  const i=CIF[curIf];const undo=kw(t0,'undo',2);const c=undo?t.slice(1):t;
+  if(kw(c[0],'shutdown',4)){if(i.kind==='null'){err('Error: NULL 接口不支持该操作。');return}i.admin=undo;stageCfg();return}
+  if(kw(c[0],'description',4)){i.desc=undo?'':c.slice(1).join(' ').slice(0,60);stageCfg();return}
   if(kw(c[0],'ip',2)&&kw(c[1],'address',3)){if(i.kind==='null'){err('Error: NULL 接口不能配置 IP 地址。');return}
-    if(undo){i.ip=null;i.len=null;refresh();return}if(!ipOk(c[2]||'')){err('Error: Wrong parameter found at \'^\' position.  格式：ip address 10.1.1.1 255.255.255.252 或 ip address 10.1.1.1 30');return}
+    if(undo){i.ip=null;i.len=null;stageCfg();return}if(!ipOk(c[2]||'')){err('Error: Wrong parameter found at \'^\' position.  格式：ip address 10.1.1.1 255.255.255.252 或 ip address 10.1.1.1 30');return}
     const L=mask2len(c[3]||'');if(L==null){err('Error: 掩码无效。');return}
-    const dup=Object.values(IF).find(o=>o!==i&&o.ip&&o.len&&L&&sameNet(o.ip,o.len,c[2],L));if(dup){err(`Error: The specified IP address conflicts with ${dup.name}.`);return}
-    i.ip=c[2];i.len=L;refresh();return}
-  if(kw(c[0],'dot1q',3)){if(i.kind!=='sub'){err('Error: 只有子接口才能配置 dot1q termination vid。');return}if(undo){i.vid=null;refresh();return}const v=+c[3];if(!(v>=1&&v<=4094)){err('Error: VLAN ID 范围是 1-4094。');return}i.vid=v;refresh();return}
+    const dup=Object.values(CIF).find(o=>o!==i&&o.ip&&o.len&&L&&sameNet(o.ip,o.len,c[2],L));if(dup){err(`Error: The specified IP address conflicts with ${dup.name}.`);return}
+    i.ip=c[2];i.len=L;stageCfg();return}
+  if(kw(c[0],'dot1q',3)){if(i.kind!=='sub'){err('Error: 只有子接口才能配置 dot1q termination vid。');return}if(undo){i.vid=null;stageCfg();return}const v=+c[3];if(!(v>=1&&v<=4094)){err('Error: VLAN ID 范围是 1-4094。');return}i.vid=v;stageCfg();return}
   err()}
 function ip2n(s){return s.split('.').reduce((a,v)=>a*256+ +v,0)}
 function sameNet(a,la,b,lb){const l=Math.min(la,lb);if(!l)return false;const m=Math.pow(2,32-l);return Math.floor(ip2n(a)/m)===Math.floor(ip2n(b)/m)}
-function help(){const H={user:['display device            查看单板状态','display version           查看软件版本','display interface brief   查看所有接口状态','display ip interface brief  查看三层接口','display interface <名称>   查看接口详情','display transceiver interface <名称>  查看光模块','display current-configuration  查看当前配置','system-view               进入系统视图'],
-  sys:['interface <名称>          进入接口视图，如 interface GE1/0/2','interface GE1/0/0.300     创建子接口','interface LoopBack1       创建环回接口','sysname <名字>            修改设备名','display ...               任意视图都能用','quit / return             返回'],
-  if:['ip address <IP> <掩码>    配置 IP，掩码可写 24 或 255.255.255.0','undo ip address           删除 IP','shutdown / undo shutdown  关闭 / 打开接口','description <文字>        接口描述','dot1q termination vid <N> 子接口终结 VLAN','display this              查看本接口配置','quit                      返回系统视图']};
+function help(){const H={user:['display device            查看单板状态','display version           查看软件版本','display interface brief   查看所有接口状态','display ip interface brief  查看三层接口','display interface <名称>   查看接口详情','display transceiver interface <名称>  查看光模块','display current-configuration  查看已生效的配置','system-view               进入系统视图'],
+  sys:['interface <名称>          进入接口视图，如 interface GE1/0/2','interface GE1/0/0.300     创建子接口','interface LoopBack1       创建环回接口','sysname <名字>            修改设备名','commit                    提交配置，改动这时才生效','display configuration candidate  查看还没提交的改动','clear configuration candidate    放弃还没提交的改动','display ...               任意视图都能用','quit / return             返回'],
+  if:['ip address <IP> <掩码>    配置 IP，掩码可写 24 或 255.255.255.0','undo ip address           删除 IP','shutdown / undo shutdown  关闭 / 打开接口','description <文字>        接口描述','dot1q termination vid <N> 子接口终结 VLAN','display this              查看本接口已生效的配置','commit                    提交配置','quit                      返回系统视图']};
   H[mode].forEach(l=>print(l,'h'))}
 function refresh(){promptEl.textContent=prompt();const keepVT={...vt};render(view,{fit:false,animate:false});vt=keepVT;applyVT();if(infoKey&&infoKey[0]==='iface')showInfo('iface',infoKey[1])}
 function runLines(lines){let d=0;lines.forEach(l=>setTimeout(()=>{exec(l);promptEl.textContent=prompt()},d+=260))}
@@ -494,7 +505,7 @@ cmd.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=cmd.value;if(v.tr
   else if(e.key==='ArrowUp'){if(hi>0){hi--;cmd.value=hist[hi]}e.preventDefault()}else if(e.key==='ArrowDown'){if(hi<hist.length){hi++;cmd.value=hist[hi]||''}e.preventDefault()}});
 const chipsEl=document.getElementById('chips');
 ['display device','display interface brief','display ip interface brief','display current-configuration','?'].forEach(c=>{const b=document.createElement('button');b.textContent=c;b.onclick=()=>{exec(c);promptEl.textContent=prompt()};chipsEl.appendChild(b)});
-print('欢迎使用模拟路由器 R1。输入 ? 查看当前视图可用的命令。\n试试：display device','h');
+print('欢迎使用模拟路由器（教学模拟）。命令风格参考华为配置指南：配置命令先进入「候选配置」，提示符变成 [*HUAWEI]，执行 commit 后才生效。\n输入 ? 查看当前视图可用的命令。试试：display device','h');
 
 /* ============ 启动 ============ */
 /* ============ 风格与探索进度 ============ */

@@ -18,7 +18,7 @@ python3 -m http.server 8000
 - **逐层拆解**：机框 → 单板（LPU / MPU / SFU）→ 子卡 → 端口 → 接口。滚轮或双指缩放，拖动平移，点击部件深入。
 - **讲解面板**：每个部件都有中文说明、要点和配置示例。
 - **报文动画**：数据报文穿越路由器、协议报文上送与 FIB 下发、报文在接口板 NP/TM 内的处理。
-- **命令行实验**：模拟路由器 R1，支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack 等，配置会实时反映到设备图上。
+- **命令行实验**（教学模拟）：提示符和两阶段生效参考华为配置指南，配置命令先进入候选配置（`[*HUAWEI]`），`commit` 后才生效；支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack、`display configuration candidate`、`clear configuration candidate` 等，提交后的配置会反映到设备图上。
 
 ## 内容约定
 
