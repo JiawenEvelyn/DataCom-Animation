@@ -20,6 +20,7 @@ python3 -m http.server 8000
 - **报文动画**：数据报文穿越路由器、协议报文上送与 FIB 下发、报文在接口板 NP/TM 内的处理。
 - **命令行实验**（教学模拟）：提示符和两阶段生效参考华为配置指南，配置命令先进入候选配置（`[*HUAWEI]`），`commit` 后才生效；支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack、`display configuration candidate`、`clear configuration candidate` 等，提交后的配置会反映到设备图上。
 
+- **四类设备**：路由器（NetEngine 8000 X8）、交换机（CloudEngine S12700E）、防火墙（HiSecEngine USG12000）、抗 DDoS（AntiDDoS12000），每类都有机框/单板拆解、讲解和原理动画（MAC 学习与 VLAN、安全区域/策略/会话表/NAT、检测→引流→清洗→回注）。
 - **中英文切换**：右上角一键切换界面和讲解语言，英文模式下保留中文术语对照。
 
 ## 内容约定

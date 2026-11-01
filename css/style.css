@@ -55,15 +55,21 @@ button{font:inherit;color:inherit}
   radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--fg) 9%,transparent) 1px,transparent 0) 0 0/22px 22px,var(--bg)}
 #svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none}
 #svg.grabbing{cursor:grabbing}
-.crumbs{position:absolute;left:16px;top:12px;right:16px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;z-index:3;pointer-events:none}
+.ovl{position:absolute;left:16px;top:12px;right:64px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;z-index:3;pointer-events:none}
+.devbar{display:flex;flex-wrap:wrap;gap:4px;pointer-events:auto}
+.devbar button{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;border-radius:8px;font-size:13px;cursor:pointer}
+.devbar button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.devbar button.how{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+.devbar button.how[aria-pressed="true"]{border-style:solid;color:#fff}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;pointer-events:none}
 .crumbs button{pointer-events:auto;border:1px solid var(--line);background:var(--surface);padding:3px 10px;border-radius:999px;font-size:12px;cursor:pointer}
 .crumbs button:last-child{background:var(--fg);color:var(--bg);border-color:var(--fg);cursor:default}
 .crumbs i{color:var(--muted);font-style:normal;font-size:11px}
-.tools{position:absolute;right:16px;top:50px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.tools{position:absolute;right:16px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
 .tools button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-family:var(--f-mono);font-size:16px;display:grid;place-items:center}
 .tools button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .hint{position:absolute;left:16px;bottom:12px;font-size:12px;color:var(--muted);pointer-events:none;z-index:2}
-.flows{position:absolute;left:16px;top:48px;display:flex;flex-direction:column;gap:6px;z-index:3;max-width:calc(100% - 80px)}
+.flows{display:flex;flex-direction:column;gap:6px;max-width:100%;pointer-events:auto}
 .flows button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;text-align:left}
 .flows button .dot{width:10px;height:10px;border-radius:50%;flex:none}
 .flows button.playing{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
@@ -162,6 +168,16 @@ pre.cfg .c{color:#7f939d}
 .d-arrow{stroke:var(--accent);stroke-width:1.6;fill:none}
 .seg0{fill:var(--accent)} .seg1{fill:var(--hl)} .seg2{fill:var(--ctrl)} .seg3{fill:var(--ok)}
 .st-up{fill:var(--ok)} .st-down{fill:var(--bad)}
+/* 原理演示（2D 拓扑） */
+.t-link{fill:none;stroke:var(--muted);stroke-width:2;stroke-linejoin:round}
+.t-link.dash{stroke-dasharray:6 5}
+.t-link.t-v10{stroke:var(--accent)} .t-link.t-v20{stroke:var(--ctrl)}
+.d-box.v10{stroke:var(--accent);stroke-width:2} .d-box.v20{stroke:var(--ctrl);stroke-width:2}
+.d-box.zone{fill:none;stroke-dasharray:8 6;stroke:var(--muted)}
+.t-row{fill:var(--accent-soft)}
+.t-sm{font-size:11.5px}
+.t-drop{fill:var(--bad);font-size:34px;font-weight:700;font-family:var(--f-ui)}
+.later{opacity:0;transition:opacity .35s} .later.on{opacity:1}
 .d-panel{fill:var(--panel-f)} .d-cage{fill:var(--cage-f)} .d-opt{fill:var(--optic-f);stroke:var(--optic-s)}
 .fx-trail{fill:none;stroke-width:2.5;stroke-dasharray:3 5;opacity:.55}
 .fx-dot{stroke:#fff;stroke-width:1.5}
