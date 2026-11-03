@@ -50,9 +50,9 @@ let DEV=(()=>{try{return localStorage.getItem('dc-dev')}catch(e){return null}})(
 const mkSlots=a=>a.map(([n,type,kb,role])=>({n,type,kb,role}));
 const DEVS={
   router:{zh:'路由器',en:'Router',kb:'chassis',slots:SLOTS},
-  switch:{zh:'交换机',en:'Switch',model:'S12700E',kb:'swChassis',topo:'mactable',slots:mkSlots([[1,'LPU','swLPU'],[2,'LPU','swLPU'],[3,'LPU','swLPU'],[4,'LPU','swLPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'LPU','swLPU'],[10,'CMU','cmu']])},
-  fw:{zh:'防火墙',en:'Firewall',model:'USG12000',kb:'fwChassis',topo:'zone',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','fwSPU'],[4,'SPU','fwSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','fwSPU'],[10,null]])},
-  ads:{zh:'抗 DDoS',en:'Anti-DDoS',model:'AntiDDoS12000',kb:'adsChassis',topo:'detect',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','adsSPU'],[4,'SPU','adsSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','adsSPU'],[10,'SPU','adsSPU']])}};
+  switch:{zh:'交换机',en:'Switch',model:'S12700E',kb:'swChassis',slots:mkSlots([[1,'LPU','swLPU'],[2,'LPU','swLPU'],[3,'LPU','swLPU'],[4,'LPU','swLPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'LPU','swLPU'],[10,'CMU','cmu']])},
+  fw:{zh:'防火墙',en:'Firewall',model:'USG12000',kb:'fwChassis',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','fwSPU'],[4,'SPU','fwSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','fwSPU'],[10,null]])},
+  ads:{zh:'抗 DDoS',en:'Anti-DDoS',model:'AntiDDoS12000',kb:'adsChassis',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','adsSPU'],[4,'SPU','adsSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','adsSPU'],[10,'SPU','adsSPU']])}};
 if(!DEVS[DEV])DEV='router';
 const dv=()=>DEVS[DEV],skb=s=>s.kb||s.type;
 
@@ -274,6 +274,56 @@ inject:{title:'Traffic Injection',sum:'Clean traffic has to be sent back into th
 clean:{title:'Scrubbing',sum:'With attack and legitimate traffic mixed together, drop the attack packets and keep the legitimate ones.',pts:['Common techniques: signature filtering, source authentication (checking the client is real), rate limiting and behavior analysis.','Scrubbing is done packet by packet, so it needs a lot of processing power.']},
 });
 
+Object.assign(SRC,{
+  vlanWiki:['华为百科：什么是 VLAN','https://info.support.huawei.com/info-finder/encyclopedia/en/VLAN.html'],
+  ipWiki:['华为百科：什么是 IP 路由','https://info.support.huawei.com/info-finder/encyclopedia/en/IP+routing.html'],
+  natWiki:['华为百科：什么是 NAT','https://info.support.huawei.com/info-finder/encyclopedia/en/NAT.html'],
+  ipsecWiki:['华为百科：什么是 IPsec','https://info.support.huawei.com/info-finder/encyclopedia/en/IPsec.html']});
+Object.assign(SRC_EN,{'华为百科：什么是 VLAN':'Huawei IP Encyclopedia: What is VLAN','华为百科：什么是 IP 路由':'Huawei IP Encyclopedia: What is IP routing','华为百科：什么是 NAT':'Huawei IP Encyclopedia: What is NAT','华为百科：什么是 IPsec':'Huawei IP Encyclopedia: What is IPsec'});
+Object.assign(KB,{
+trunkport:{tag:'接口',title:'Trunk 口',en:'Trunk Port',sum:'能同时承载多个 VLAN 的端口，常用在交换机之间，也用来连接路由器、防火墙、AP 等能识别 VLAN 标签的设备。帧在 Trunk 上带着 802.1Q 标签传，对端靠标签分辨它属于哪个 VLAN。',
+  pts:['放行列表：port trunk allow-pass vlan 指定哪些 VLAN 能走这个口，不在列表里的 VLAN 的帧过不去。两端的放行列表要一致。','缺省 VLAN（PVID）：Trunk 口收到不带标签的帧，归入缺省 VLAN；发出时只有缺省 VLAN 的帧不带标签，其他 VLAN 的帧都带标签。有些厂商把它叫 Native VLAN。','对比 Access 口：一般只收发不带标签的帧，接电脑、服务器这类不处理标签的终端。','还有 Hybrid 口：可以按 VLAN 分别指定发出时带不带标签。'],
+  cfg:['interface GigabitEthernet1/0/24',' port link-type trunk',' port trunk allow-pass vlan 10 20'],run:false,note:'命令格式参考华为交换机配置指南，接口编号为示意。',src:[SRC.vlanWiki],drill:'点左上角的动画按钮，看帧在 Trunk 上怎么带标签'},
+dot1q:{tag:'概念 · 通用原理',title:'802.1Q VLAN 标签',en:'802.1Q VLAN Tag',sum:'IEEE 802.1Q 在以太网帧的源 MAC 后面插入一个 4 字节的 VLAN 标签。交换机读标签里的 VLAN ID（VID），就知道这个帧属于哪个 VLAN。',
+  pts:['TPID 是 0x8100，表示"后面是 VLAN 标签"。','PRI 3 位，表示优先级，QoS 会用到。','VID 12 位，取值 0~4095，其中 0 和 4095 保留，能用的是 1~4094。','电脑、服务器发出的一般是不带标签的帧，标签由交换机在入口打上、在出口去掉。'],src:[SRC.vlanWiki]},
+ipaddr:{tag:'概念',title:'IP 地址与掩码',en:'IP Address & Mask',sum:'IPv4 地址 32 位，写成 4 段十进制。掩码说明前多少位是网络号：10.1.1.1/24 表示前 24 位（10.1.1）是网段，最后 8 位是这台主机的编号。',
+  pts:['/24 就是掩码 255.255.255.0。IP 和掩码按位与，得到网段地址 10.1.1.0。','主机位全 0 是网段地址，全 1 是广播地址，都不能分给设备。所以 /24 有 254 个可用地址，/30 只有 2 个，常用于两台设备点对点互连。','同一网段的设备可以直接通信；不同网段要经过路由器（网关）。','路由器每个三层接口配一个 IP 地址，不同接口的网段不能重叠。'],
+  cfg:['system-view','interface GigabitEthernet1/0/0','ip address 10.1.1.1 24','commit','display this'],src:[SRC.ipWiki],drill:'点左上角「原理演示」看 IP 地址怎么生成直连路由'},
+rtable:{tag:'概念',title:'路由表',en:'Routing Table',sum:'路由器转发报文用的"地图"。每条路由写着去哪个网段（Destination/Mask）、交给哪个下一跳（NextHop）、从哪个接口出去（Interface），以及路由从哪来（Proto）、优先级（Pre）和开销（Cost）。',
+  pts:['直连路由（Direct）：接口 Up 并配了 IP 后自动生成。','静态路由（Static）：管理员手工配置，简单可控，但网络变了不会自动调整。','动态路由：OSPF、IS-IS、BGP、RIP 等协议自动学习，网络变化时自动更新。这些协议怎么工作，放在后面的协议模块里讲。','默认路由 0.0.0.0/0：能匹配所有目的地址，查不到更精确的路由时就用它。','查看命令：display ip routing-table。'],
+  cfg:['display ip routing-table','system-view','ip route-static 0.0.0.0 0 198.51.100.2','commit'],run:false,note:CFG_NOTE[0],src:[SRC.ipWiki],drill:'点左上角的动画按钮，看路由怎么选、报文怎么查表'},
+rselect:{tag:'概念',title:'路由选择',en:'Route Selection',sum:'去同一个网段可能有好几条路由，路由器先挑出最优的一条用来转发；转发报文时，再从表里找和目的地址最匹配的那条。',
+  pts:['先比优先级（Pre）：数值越小越优先。华为设备上直连路由是 0，OSPF 是 10，静态路由是 60；255 表示来源不可靠。','优先级相同再比开销（Cost）：开销小的胜出。','最长匹配：一个目的地址能匹配多条路由时，选掩码最长、最精确的那条。比如 172.16.1.5 同时匹配 /16 和 /24，选 /24。','都匹配不上、也没有默认路由时，报文被丢弃，并给源端回 ICMP 消息。'],src:[SRC.ipWiki]},
+ipfwd:{tag:'概念 · 通用原理',title:'逐跳转发',en:'Hop-by-hop Forwarding',sum:'每台路由器只负责把报文送到下一跳：查表、TTL 减 1、换二层头，然后交给下一台。一路接力，报文就到了目的地。',
+  pts:['TTL（生存时间）每过一台路由器减 1，减到 0 就丢弃，防止报文因为路由环路一直绕圈。','不做 NAT 时，源和目的 IP 一路不变；二层 MAC 地址每一跳都会换。','多台路由器之间的逐跳转发，会在「基础组网」模块里详细演示。']},
+natserver:{tag:'概念',title:'NAT Server',en:'NAT Server',sum:'把内网（通常是 DMZ）里的服务器"发布"到公网：外部用户访问一个公网地址和端口，防火墙把目的地址换成服务器的私网地址。它属于目的 NAT。',
+  pts:['配置后设备生成 Server-map 表项，固定记录"公网地址:端口 ↔ 私网地址:端口"，配置不删就一直在。','首包匹配 Server-map，改写目的地址并建立会话；后续报文直接查会话表。','服务器回包时，按会话把源地址换回公网地址，外部用户始终只看到公网地址。','还要配安全策略，放行从 Untrust 访问这台服务器的流量。'],
+  cfg:['nat server web protocol tcp global 198.51.100.10 80 inside 172.16.1.10 80'],run:false,note:CFG_NOTE[0],src:[SRC.natWiki],drill:'点左上角的动画按钮，看外部用户怎么访问到内部服务器'},
+ipsec:{tag:'概念',title:'IPsec VPN',en:'IPsec VPN',sum:'在互联网上给两个私网之间建一条加密隧道。报文先加密、加上认证信息，再套上公网 IP 头穿过互联网，到对端校验、解密、还原。常用于总部和分支之间互连。',
+  pts:['ESP 能加密数据，也能校验来源和完整性；AH 只认证、不加密。','隧道模式（通用原理）：整个原始 IP 报文被加密，外面套一个新的 IP 头，用的是两端网关的公网地址。','感兴趣流：用 ACL 指定哪些流量要走 IPsec，例如 10.1.1.0/24 ↔ 10.2.2.0/24。','IPsec 适合站点到站点组网；两端都要部署 VPN 网关，配置相对复杂。'],
+  cfg:['acl number 3000',' rule permit ip source 10.1.1.0 0.0.0.255 destination 10.2.2.0 0.0.0.255','ipsec policy map1 10 isakmp',' security acl 3000',' ike-peer b',' proposal tran1','interface GigabitEthernet1/0/2',' ipsec policy map1'],run:false,note:CFG_NOTE[0],src:[SRC.ipsecWiki],drill:'点左上角的动画按钮，看报文怎么加密穿过互联网'},
+ike:{tag:'概念',title:'IKE 协商',en:'IKE Negotiation',sum:'加密之前，双方要约定算法和密钥。IKE 协议自动完成这件事：先建 IKE SA，用来认证身份、安全地交换密钥；再在它的保护下建 IPsec SA，约定真正保护数据的算法和密钥。',
+  pts:['SA（安全联盟）就是双方对"怎么保护数据"的约定：用 AH 还是 ESP、什么封装模式、什么加密和认证算法、密钥是什么。','身份认证常用预共享密钥（两端配同一个密钥）或数字证书。','有感兴趣流时才触发协商；隧道空闲一段时间后自动拆除。'],src:[SRC.ipsecWiki]}});
+Object.assign(KB_EN,{
+trunkport:{title:'Trunk Port',sum:'A port that carries frames of several VLANs at once. Trunks usually link switches together, and also connect routers, firewalls, APs and other tag-aware devices. Frames on a trunk carry an 802.1Q tag so the far end can tell which VLAN they belong to.',
+  pts:['Allowed list: port trunk allow-pass vlan sets which VLANs may use the port; frames of other VLANs are blocked. Keep the lists consistent on both ends.','Default VLAN (PVID): untagged frames received on a trunk join the default VLAN; on the way out, only default-VLAN frames go untagged and all others keep their tags. Some vendors call it the native VLAN.','Compare access ports: they usually send and receive untagged frames only, for PCs and servers that don\'t handle tags.','There are also hybrid ports, which can choose per VLAN whether frames leave tagged or untagged.'],
+  note:'Command format follows Huawei switch configuration guides; interface numbers are illustrative.',drill:'Press an animation button at top left to see frames tagged on the trunk'},
+dot1q:{title:'802.1Q VLAN Tag',sum:'IEEE 802.1Q inserts a 4-byte VLAN tag after the source MAC of an Ethernet frame. Switches read the VLAN ID (VID) in the tag to know which VLAN the frame belongs to.',
+  pts:['TPID is 0x8100, meaning "a VLAN tag follows".','PRI is 3 bits of priority, used by QoS.','VID is 12 bits, 0–4095; 0 and 4095 are reserved, so usable IDs are 1–4094.','PCs and servers normally send untagged frames; switches add the tag on the way in and remove it on the way out.']},
+ipaddr:{title:'IP Address & Mask',sum:'An IPv4 address is 32 bits, written as four decimal numbers. The mask says how many leading bits are the network: 10.1.1.1/24 means the first 24 bits (10.1.1) are the subnet and the last 8 bits number this host.',
+  pts:['/24 is mask 255.255.255.0. ANDing the IP with the mask gives the subnet address 10.1.1.0.','All-zero host bits are the subnet address and all-one host bits are the broadcast address; neither goes to a device. So a /24 has 254 usable addresses and a /30 only 2, which is common for point-to-point links.','Devices in the same subnet talk directly; different subnets need a router (gateway).','Each Layer-3 router interface gets an IP address, and subnets on different interfaces must not overlap.'],drill:'Open "How it works" at top left to see how addresses create direct routes'},
+rtable:{title:'Routing Table',sum:'The router\'s map for forwarding. Each route says which subnet it leads to (Destination/Mask), the next hop (NextHop) and outgoing interface (Interface), plus where it came from (Proto), its preference (Pre) and cost (Cost).',
+  pts:['Direct routes: created automatically when an interface is up and has an IP address.','Static routes: configured by hand — simple and predictable, but they don\'t adapt when the network changes.','Dynamic routes: learned automatically by protocols such as OSPF, IS-IS, BGP and RIP, and updated when the network changes. How those protocols work comes in the later protocol lessons.','Default route 0.0.0.0/0: matches every destination and is used when nothing more specific matches.','To view: display ip routing-table.'],drill:'Press an animation button at top left to see route selection and lookup',note:CFG_NOTE[1]},
+rselect:{title:'Route Selection',sum:'There may be several routes to the same subnet. The router first picks the best one for forwarding; when forwarding a packet, it then finds the route that best matches the destination address.',
+  pts:['Compare preference (Pre) first: lower wins. On Huawei devices direct routes are 0, OSPF 10, static 60; 255 marks an unreliable source.','Same preference? Compare cost: the lower cost wins.','Longest match: when an address matches several routes, the one with the longest, most specific mask wins. 172.16.1.5 matches both /16 and /24, so /24 is used.','If nothing matches and there is no default route, the packet is dropped and an ICMP message goes back to the source.']},
+ipfwd:{title:'Hop-by-hop Forwarding',sum:'Each router only gets the packet to the next hop: look up the table, decrement TTL, write a new L2 header, and pass it on. Relay after relay, the packet reaches its destination.',
+  pts:['TTL (time to live) drops by 1 at every router; at 0 the packet is dropped, so a routing loop can\'t keep it circling forever.','Without NAT, the source and destination IPs stay the same end to end; the L2 MAC addresses change at every hop.','Forwarding across several routers is shown in detail in the Basic Networking lesson.']},
+natserver:{title:'NAT Server',sum:'Publishes an internal server (usually in the DMZ) to the Internet: outside users connect to a public address and port, and the firewall rewrites the destination to the server\'s private address. It is a form of destination NAT.',
+  pts:['Configuring it creates a server-map entry, a fixed "public IP:port ↔ private IP:port" mapping that stays until the configuration is removed.','The first packet matches the server-map, its destination is rewritten, and a session is created; later packets just hit the session.','Replies from the server get their source rewritten back to the public address via the session, so outside users only ever see the public address.','A security policy must also permit traffic from Untrust to this server.'],drill:'Press the animation button at top left to see an outside user reach the internal server',note:CFG_NOTE[1]},
+ipsec:{title:'IPsec VPN',sum:'Builds an encrypted tunnel across the Internet between two private networks. Packets are encrypted, given integrity data and wrapped in a public IP header to cross the Internet; the far end checks, decrypts and restores them. Commonly links branches to HQ.',
+  pts:['ESP encrypts data and also authenticates the source and checks integrity; AH authenticates but does not encrypt.','Tunnel mode (generic principle): the whole original IP packet is encrypted and wrapped in a new IP header using the two gateways\' public addresses.','Interesting traffic: an ACL selects which traffic uses IPsec, e.g. 10.1.1.0/24 ↔ 10.2.2.0/24.','IPsec suits site-to-site networks; both sites need a VPN gateway, and configuration is relatively complex.'],drill:'Press the animation button at top left to see a packet encrypted across the Internet',note:CFG_NOTE[1]},
+ike:{title:'IKE Negotiation',sum:'Before encrypting, both sides must agree on algorithms and keys. IKE does this automatically: first an IKE SA to authenticate each other and exchange keys securely, then, under its protection, an IPsec SA with the algorithms and keys that actually protect the data.',
+  pts:['An SA (security association) is the agreement on how to protect data: AH or ESP, encapsulation mode, encryption and authentication algorithms, and keys.','Authentication usually uses a pre-shared key (the same key configured on both ends) or digital certificates.','Negotiation starts only when interesting traffic appears; an idle tunnel is torn down automatically.']}});
 function ifKB(name){const i=IF[name];if(!i)return KB.physif;
   const up=phyUp(i),pu=protoUp(i);
   const rows=[['PHY',`<span class="pill ${up?'up':'down'}">${i.kind==='phy'&&!i.admin?'*down':up?'up':'down'}</span>`],['Protocol',`<span class="pill ${pu?'up':'down'}">${pu?'up':'down'}</span>`],[L('IP 地址','IP address'),i.ip?`${i.ip}/${i.len}`:L('未配置','not set')],[L('描述','Description'),i.desc||'—']];
@@ -292,24 +342,24 @@ let view={k:'chassis'},sel=null,xray=false;
 
 let RT=0;
 function render(v,{fit=true,animate=true}={}){
-  stopFlow();if(v.k==='topo'&&!dv().topo)v={k:'chassis'};const tok=++RT;
+  stopFlow();if(v.k==='topo'){if(!demos().length)v={k:'chassis'};else if(!demos().some(d=>d.id===v.d))v={k:'topo',d:demos()[0].id}}const tok=++RT;
   const doit=()=>{if(tok!==RT)return;view=v;scene.innerHTML='';fx.innerHTML='';scene.classList.toggle('xray',xray&&v.k==='chassis');
     ({chassis:drawChassis,board:drawBoard,sub:drawSub,port:drawPort,topo:drawTopo})[v.k](v);
-    drawCallouts(v);if(fit)fitView();crumbs();flowButtons();
+    drawCallouts(v);crumbs();flowButtons();if(fit)fitView();
     document.getElementById('hint').textContent=(LANG==='en'?{chassis:'Scroll or pinch to zoom · drag to pan · click a board, subcard or port to dive in',board:'The board is laid flat so you can see inside · click a chip to learn about it, click a subcard to go deeper',sub:'Click a port to see its interface · yellow is fiber, white is the optical module',port:'Click any block to learn about it · change the interface in the CLI and this view follows after commit',topo:'Press an animation button at top left · click any box to learn about it'}:{chassis:'滚轮或双指缩放 · 拖动平移 · 点击单板、子卡或端口深入查看',board:'单板平放展示，方便观察内部 · 点击芯片看讲解，点击子卡继续深入',sub:'点击端口查看接口 · 黄色的是光纤，白色的是光模块',port:'点击各个方块查看讲解 · 在命令行实验里修改接口，commit 后这里会同步变化',topo:'点左上角的动画按钮播放 · 点击任意方块查看讲解'})[v.k];
     document.getElementById('xray').hidden=v.k!=='chassis';
     if(sel){const e=scene.querySelector(`[data-id="${CSS.escape(sel)}"]`);if(e)e.classList.add('sel')}
     requestAnimationFrame(()=>scene.classList.remove('fade'))};
   if(animate&&scene.childNodes.length){scene.classList.add('fade');setTimeout(doit,200)}else doit();
 }
-function viewKB(v){if(v.k==='chassis')return[dv().kb];if(v.k==='topo')return[dv().topo];if(v.k==='board')return[skb(slotOf(v.n))];if(v.k==='sub')return[PICS[v.p].kb];return['iface',v.name]}
+function viewKB(v){if(v.k==='chassis')return[dv().kb];if(v.k==='topo')return[demoOf(v).kb];if(v.k==='board')return[skb(slotOf(v.n))];if(v.k==='sub')return[PICS[v.p].kb];return['iface',v.name]}
 const slotOf=n=>dv().slots.find(s=>s.n===n);
 
 function crumbs(){const c=document.getElementById('crumbs');c.innerHTML='';const nm=DEV==='router'?sysname:dv().model;const items=[[L(`机框 ${nm}`,`Chassis ${nm}`),{k:'chassis'}]];if(view.k==='topo')items.push([L('原理演示','How it works'),view]);
   if(view.k!=='chassis'&&view.k!=='topo'){const n=view.n??IF[view.name]?.slot;if(n){items.push([L(`${n} 号槽 · ${slotOf(n).type}`,`Slot ${n} · ${slotOf(n).type}`),{k:'board',n}])}}
   if(view.k==='sub'||(view.k==='port'&&IF[view.name]?.kind==='phy')){const i=IF[view.name];const n=view.n??i.slot,p=view.p??i.pic;items.push([L(`${p} 号子卡`,`Subcard ${p}`),{k:'sub',n,p}])}
   if(view.k==='port')items.push([view.name,view]);
-  items.forEach(([t,v],idx)=>{if(idx){const s=document.createElement('i');s.textContent='›';c.appendChild(s)}const b=document.createElement('button');b.textContent=t;if(idx<items.length-1)b.onclick=()=>{sel=null;go(v)};c.appendChild(b)});devBar()}
+  items.forEach(([t,v],idx)=>{if(idx){const s=document.createElement('i');s.textContent='›';c.appendChild(s)}const b=document.createElement('button');b.textContent=t;if(idx<items.length-1)b.onclick=()=>{sel=null;go(v)};c.appendChild(b)});devBar();demoBar()}
 
 function go(v){render(v);const [k,a]=viewKB(v);showInfo(k,a);}
 
@@ -508,12 +558,12 @@ function drawPort({name}){
 const T2=(par,x,y,s,cls='d-s',anchor='start')=>{const t=el('text',{x,y,class:cls,'text-anchor':anchor},par);t.textContent=s;return t};
 function tNode(id,kb,x,y,w,h,title,sub,cls=''){const g=grp(scene,{kb,id,tip:title});el('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:10,class:'d-box '+cls},g);T2(g,x,sub?y-3:y+5,title,'d-t','middle');if(sub)T2(g,x,y+17,sub,'d-s','middle');return g}
 const tLink=(pts2,cls='')=>el('polyline',{points:pts2.map(p=>p.join(',')).join(' '),class:'t-link '+cls},scene);
-function later(e,fi,si){e.dataset.show=fi+':'+si;e.classList.add('later');return e}
+function later(e,fi,si,until){e.dataset.show=fi+':'+si+(until!=null?':'+until:'');e.classList.add('later');return e}
 function tDrop(x,y,fi,si){const t=el('text',{x,y,class:'t-drop','text-anchor':'middle'},scene);t.textContent='✕';return later(t,fi,si)}
 function tTable(kb,id,x,y,w,title,cols,rows){const g=grp(scene,{kb,id,tip:title});const rh=24,h=36+rh*(rows.length+1);
   el('rect',{x,y,width:w,height:h,rx:8,class:'d-box'},g);T2(g,x+12,y+22,title,'d-t');
   let cx=x+12;cols.forEach(([c,cw])=>{T2(g,cx,y+50,c,'d-s');cx+=cw});
-  rows.forEach((r,i)=>{const ry=y+36+rh*(i+1);const rg=el('g',{},g);el('rect',{x:x+6,y:ry-2,width:w-12,height:rh-2,rx:4,class:'t-row'},rg);let rx=x+12;r.cells.forEach((c,j)=>{T2(rg,rx,ry+15,c,'d-m t-sm');rx+=cols[j][1]});if(r.show)later(rg,...r.show)});return g}
+  rows.forEach((r,i)=>{const ry=y+36+rh*(i+1);const rg=el('g',{class:'t-rowg'+(r.off?' off':'')},g);if(r.id)rg.dataset.id=r.id;if(r.hide)rg.dataset.hide=r.hide;el('rect',{x:x+6,y:ry-2,width:w-12,height:rh-2,rx:4,class:'t-row'},rg);let rx=x+12;r.cells.forEach((c,j)=>{T2(rg,rx,ry+15,c,'d-m t-sm');rx+=cols[j][1]});if(r.show)later(rg,...r.show)});return g}
 
 /* 交换机：A、B、D 在 VLAN 10，C 在 VLAN 20 */
 const SWT={A:[150,500],B:[370,500],C:[590,500],D:[810,500],P:{A:[400,330],B:[460,330],C:[540,330],D:[600,330]},IF:[500,250]};
@@ -591,8 +641,140 @@ function topoAdsFlows(){const n=[230,260],r=[385,260],r2=[555,260],s=[740,260];r
     {t:L('路由器按最长匹配，把去往服务器的流量都送到抗 DDoS 设备','By longest match, the router now sends all traffic for the server to the anti-DDoS system'),hl:['t-ads'],paths:[[n,r,[420,291],[420,467]]]},
     {t:L('清洗：丢弃攻击报文，留下正常用户的报文','Scrubbing: attack packets are dropped, legitimate packets are kept'),hl:['t-ads','t-clean'],pulse:ADT.ads,dur:2200},
     {t:L('正常流量走回注链路（例如 GRE 隧道或策略路由）回到网络，最终到达服务器。回注不能再命中引流路由，否则会绕回来形成环路','Clean traffic returns over the injection link (e.g. GRE tunnel or PBR) and reaches the server. Injection must not hit the diversion route again, or it would loop'),hl:['t-srv'],paths:[[[520,467],[520,291],r2,s]]}]}]}
-function drawTopo(){({switch:topoSwitch,fw:topoFw,ads:topoAds})[DEV]()}
-function topoFlows(){return ({switch:topoSwitchFlows,fw:topoFwFlows,ads:topoAdsFlows})[DEV]()}
+/* 小标签：报文状态（带不带 VLAN 标签、地址变化等） */
+function tTag(x,y,text,kb,fi,si,until,cls=''){const g=grp(scene,{kb,id:'tag-'+fi+'-'+si+'-'+x,tip:text});const w=Math.max(64,text.length*7.4+18);
+  el('rect',{x:x-w/2,y:y-12,width:w,height:24,rx:12,class:'d-box tag '+cls},g);T2(g,x,y+4,text,'d-s t-sm','middle');return later(g,fi,si,until)}
+/* 报文格式条：segs=[[文字,宽度,类名]] */
+function tPkt(id,kb,y,title,segs,cx=500){const g=grp(scene,{kb,id,tip:title});const W=segs.reduce((s,a)=>s+a[1],0);let x=cx-W/2;T2(g,x,y-8,title,'d-s');
+  segs.forEach(([t,w,c])=>{el('rect',{x,y,width:w,height:30,class:'d-box seg '+(c||'')},g);T2(g,x+w/2,y+19,t,'d-s t-sm','middle');x+=w});return g}
+
+/* 交换机：Trunk 口 */
+const TKT={sw1:[280,200],sw2:[720,200],A:[150,440],C:[280,440],E:[410,440],B:[680,440],D:[810,440],P:{A:200,C:280,E:360,B:680,D:760}};
+function topoTrunk(){
+  tPkt('t-fmt','dot1q',40,L('带 802.1Q 标签的以太网帧','Ethernet frame with an 802.1Q tag'),[[L('目的 MAC','Dest MAC'),110],[L('源 MAC','Src MAC'),110],['802.1Q · TPID 0x8100 · PRI · VID',260,'enc'],[L('类型','Type'),70],[L('数据','Data'),130]]);
+  [['sw1','SW1'],['sw2','SW2']].forEach(([k,n])=>{const [x,y]=TKT[k];const g=grp(scene,{kb:'swChassis',id:'t-'+k,tip:n});el('rect',{x:x-120,y:y-60,width:240,height:120,rx:14,class:'d-box l1'},g);T2(g,x-104,y-34,L('交换机 ','Switch ')+n,'d-t')});
+  tLink([[400,200],[600,200]],'t-trunk');
+  const tk=grp(scene,{kb:'trunkport',id:'t-trunk',tip:'Trunk'});el('rect',{x:392,y:192,width:16,height:16,rx:3,class:'d-box l1'},tk);el('rect',{x:592,y:192,width:16,height:16,rx:3,class:'d-box l1'},tk);
+  T2(tk,500,186,'Trunk · allow-pass vlan 10 20','d-m t-sm','middle');T2(tk,388,226,'GE1/0/24','d-s t-sm','end');T2(tk,612,226,'GE1/0/24','d-s t-sm');
+  [['A','sw1','10','GE1/0/1'],['C','sw1','20','GE1/0/2'],['E','sw1','30','GE1/0/3'],['B','sw2','10','GE1/0/1'],['D','sw2','20','GE1/0/2']].forEach(([h,s,v,port])=>{const [x,y]=TKT[h],px=TKT.P[h];
+    tLink([[x,y-30],[x,350],[px,350],[px,268]],'t-v'+v);
+    const pg=grp(scene,{kb:'swport',id:'t-p'+h,tip:`${port} · Access · PVID ${v}`});el('rect',{x:px-12,y:252,width:24,height:16,rx:3,class:'d-box v'+v},pg);T2(pg,px-16,265,port,'d-s t-sm','end');
+    tNode('t-'+h,'vlan',x,y,120,60,L(`主机 ${h}`,`Host ${h}`),`VLAN ${v}`,'v'+v)});
+  tTag(95,385,L('无标签','untagged'),'dot1q',0,0,1);tTag(500,226+22,'VID = 10','dot1q',0,2,3,'v10');tTag(625,385,L('无标签','untagged'),'dot1q',0,4);
+  tTag(335,385,L('无标签','untagged'),'dot1q',1,0,0);tTag(500,248,'VID = 20','dot1q',1,1,1,'v20');tTag(865,385,L('无标签','untagged'),'dot1q',1,2);
+  tTag(465,385,'VLAN 30','dot1q',2,0);tDrop(420,178,2,1)}
+function topoTrunkFlows(){const up=h=>{const [x,y]=TKT[h],px=TKT.P[h];return [[x,y-30],[x,350],[px,350],[px,268]]},dn=h=>up(h).slice().reverse(),tr=[[400,200],[600,200]];
+  return [
+  {name:L('VLAN 10 的帧穿过 Trunk','A VLAN 10 frame crosses the trunk'),color:DATA,foot:L('一条 Trunk 链路就能承载多个 VLAN，交换机之间不用每个 VLAN 拉一根线。','One trunk link carries many VLANs, so switches don\'t need a separate cable per VLAN.'),steps:[
+    {t:L('A 发出普通以太网帧（不带 VLAN 标签），从 SW1 的 GE1/0/1 进入。这个口是 Access 口，PVID 是 10','A sends an ordinary Ethernet frame (no VLAN tag) into SW1 on GE1/0/1, an access port with PVID 10'),hl:['t-A','t-pA'],paths:[up('A')]},
+    {t:L('Access 口收到不带标签的帧，按 PVID 把它归入 VLAN 10','The access port puts the untagged frame into its PVID, VLAN 10'),hl:['t-pA'],pulse:[TKT.P.A,260],dur:1800},
+    {t:L('目的 MAC 在 SW2 那边，出口是 GE1/0/24。这是 Trunk 口，放行了 VLAN 10，所以帧带着 802.1Q 标签（VID=10）发出去','The destination MAC is behind SW2, so the frame leaves on GE1/0/24. It is a trunk that allows VLAN 10, so the frame goes out with an 802.1Q tag (VID=10)'),hl:['t-trunk','t-fmt'],paths:[[[TKT.P.A,268],[TKT.P.A,200],...tr]]},
+    {t:L('SW2 从 Trunk 口收到帧，读标签知道它属于 VLAN 10，只会往 VLAN 10 的端口转发，不会跑到 VLAN 20','SW2 receives the frame on its trunk, reads the tag, and knows it is VLAN 10 — it will only go to VLAN 10 ports, never VLAN 20'),hl:['t-sw2'],pulse:[720,200],dur:1800},
+    {t:L('从 Access 口 GE1/0/1 发给 B 之前去掉标签，B 收到的是普通以太网帧，感觉不到 VLAN 的存在','Before leaving access port GE1/0/1 toward B, the tag is removed; B gets an ordinary frame and never sees the VLAN'),hl:['t-B'],paths:[[[600,200],[TKT.P.B,200],...dn('B')]]}]},
+  {name:L('VLAN 20 共用同一条 Trunk','VLAN 20 shares the same trunk'),color:CTRL,foot:L('标签不同，同一根线上的帧就分得清属于哪个 VLAN。','Different tags keep frames on the same cable apart by VLAN.'),steps:[
+    {t:L('C（VLAN 20）发帧给 D，从 SW1 的 GE1/0/2 进入，被归入 VLAN 20','C (VLAN 20) sends a frame to D; it enters SW1 on GE1/0/2 and is put into VLAN 20'),hl:['t-C','t-pC'],paths:[up('C')]},
+    {t:L('走的还是这条 Trunk，这次标签是 VID=20','Same trunk, but this time the tag is VID=20'),hl:['t-trunk'],paths:[[[TKT.P.C,268],[TKT.P.C,200],...tr]]},
+    {t:L('SW2 按标签把帧放进 VLAN 20，去掉标签后交给 D','SW2 puts the frame into VLAN 20 by its tag, removes the tag and delivers it to D'),hl:['t-D'],paths:[[[600,200],[TKT.P.D,200],...dn('D')]]}]},
+  {name:L('Trunk 没放行的 VLAN 过不去','VLANs not allowed on the trunk are blocked'),color:CTRL,foot:L('allow-pass 决定 Trunk 上能走哪些 VLAN，两端交换机的放行列表要一致。','allow-pass decides which VLANs may use the trunk; keep the lists consistent on both switches.'),steps:[
+    {t:L('E 属于 VLAN 30，发出一个广播帧，SW1 把它归入 VLAN 30','E is in VLAN 30 and sends a broadcast; SW1 puts it into VLAN 30'),hl:['t-E','t-pE'],paths:[up('E')]},
+    {t:L('广播帧本该从 Trunk 发往 SW2，但 Trunk 只放行 VLAN 10 和 20（port trunk allow-pass vlan 10 20），VLAN 30 的帧不能从这个口发出','The broadcast would go out the trunk to SW2, but the trunk only allows VLANs 10 and 20 (port trunk allow-pass vlan 10 20), so VLAN 30 frames can\'t leave on it'),hl:['t-trunk'],pulse:[400,200],dur:2600}]}]}
+
+/* 路由器：IP 寻址与路由表 */
+const RTY=360,rowY=i=>RTY+36+24*i+9;
+function topoRoute(){
+  tLink([[235,210],[340,210]]);tLink([[660,200],[720,200],[720,135],[790,135]]);tLink([[660,250],[720,250],[720,300],[790,300]]);
+  const r=grp(scene,{kb:'ipfwd',id:'t-r1',tip:'R1'});el('rect',{x:340,y:120,width:320,height:160,rx:14,class:'d-box l1'},r);T2(r,500,150,L('路由器 R1','Router R1'),'d-t','middle');T2(r,500,170,'NetEngine 8000 X8','d-s','middle');
+  [['t-if0','GE1/0/0','10.1.1.1/24',210],['t-if1','GE1/0/1','10.2.2.1/30',232],['t-if2','GE1/0/2','198.51.100.1/30',254]].forEach(([id,n,ip,y])=>{const g=grp(scene,{kb:'ipaddr',id,tip:n+' '+ip});T2(g,370,y,n,'d-m t-sm');T2(g,470,y,ip,'d-m t-sm')});
+  T2(scene,332,202,'GE1/0/0','d-s t-sm','end');T2(scene,668,192,'GE1/0/1','d-s t-sm');T2(scene,668,242,'GE1/0/2','d-s t-sm');
+  tNode('t-pc','ipaddr',150,210,170,62,'PC','10.1.1.10/24 · GW 10.1.1.1');
+  tNode('t-r2','rtable',880,135,180,62,L('邻居路由器 R2','Neighbor R2'),'10.2.2.2 · OSPF');T2(scene,880,187,L('后面是 172.16.0.0/16','172.16.0.0/16 behind it'),'d-s t-sm','middle');
+  tNode('t-isp','rtable',880,300,180,62,L('运营商 ISP','ISP'),'198.51.100.2');T2(scene,880,350,L('通往互联网','to the Internet'),'d-s t-sm','middle');
+  const ip=grp(scene,{kb:'ipaddr',id:'t-ipcalc',tip:'10.1.1.1/24'});el('rect',{x:20,y:0,width:340,height:78,rx:10,class:'d-box l1'},ip);
+  T2(ip,34,22,'10.1.1.1/24 = '+L('网络号 10.1.1 + 主机号 .1','network 10.1.1 + host .1'),'d-m t-sm');T2(ip,34,44,L('掩码 255.255.255.0 → 网段 10.1.1.0','mask 255.255.255.0 → subnet 10.1.1.0'),'d-m t-sm');T2(ip,34,66,L('可用 .1 ~ .254，.255 是广播地址','usable .1 – .254, .255 is broadcast'),'d-m t-sm');later(ip,0,0);
+  const off=L('备用：优先级低，不生效','backup: lower Pre, inactive');
+  tTable('rtable','t-rtab',40,RTY,920,L('路由表 display ip routing-table（节选）','Routing table: display ip routing-table (excerpt)'),[['Destination/Mask',190],['Proto',80],['Pre',60],['Cost',60],['NextHop',150],['Interface',120],['',240]],[
+    {id:'rt1',cells:['10.1.1.0/24','Direct','0','0','10.1.1.1','GE1/0/0',''],hide:'0:2'},
+    {id:'rt2',cells:['10.2.2.0/30','Direct','0','0','10.2.2.1','GE1/0/1',''],hide:'0:3'},
+    {id:'rt3',cells:['198.51.100.0/30','Direct','0','0','198.51.100.1','GE1/0/2',''],hide:'0:3'},
+    {id:'rt4',cells:['172.16.0.0/16','OSPF','10','2','10.2.2.2','GE1/0/1',''],hide:'0:99,1:1'},
+    {id:'rt5',cells:['172.16.0.0/16','Static','60','0','198.51.100.2','GE1/0/2',off],hide:'0:99,1:2',off:true},
+    {id:'rt6',cells:['172.16.1.0/24','OSPF','10','3','10.2.2.2','GE1/0/1',''],hide:'0:99,1:1'},
+    {id:'rt7',cells:['0.0.0.0/0','Static','60','0','198.51.100.2','GE1/0/2',''],hide:'0:99'}]);
+  const rs=grp(scene,{kb:'rselect',id:'t-rsel',tip:L('选路规则','Route selection')});el('rect',{x:640,y:0,width:340,height:78,rx:10,class:'d-box'},rs);
+  T2(rs,654,22,L('① 同一网段：优先级 Pre 小的优先','① Same prefix: lower Pre wins'),'d-s');T2(rs,654,44,L('② Pre 相同：开销 Cost 小的优先','② Same Pre: lower Cost wins'),'d-s');T2(rs,654,66,L('③ 转发时：掩码最长的匹配优先','③ Forwarding: longest mask match wins'),'d-s');
+  tTag(288,236,'TTL 64','ipfwd',2,0,1);tTag(755,322,'TTL 63','ipfwd',2,2);tDrop(500,108,2,4)}
+function topoRouteFlows(){const pc=[[235,210],[340,210]],toR2=[[660,200],[720,200],[720,135],[790,135]],toIsp=[[660,250],[720,250],[720,300],[790,300]];return [
+  {name:L('IP 地址与直连路由','IP addresses and direct routes'),color:DATA,foot:L('直连路由只覆盖自己接口所在的网段；更远的网段要靠静态路由或动态路由协议。','Direct routes only cover the router\'s own interface subnets; farther networks need static routes or a routing protocol.'),steps:[
+    {t:L('给 GE1/0/0 配置 IP 地址 10.1.1.1/24。/24 是掩码长度：前 24 位是网络号，后 8 位是主机号','Configure 10.1.1.1/24 on GE1/0/0. /24 is the mask length: the first 24 bits are the network, the last 8 the host'),hl:['t-if0','t-ipcalc'],pulse:[340,210],dur:2400},
+    {t:L('IP 和掩码 255.255.255.0 按位与，得到网段 10.1.1.0。这个网段可用的主机地址是 10.1.1.1 ~ 10.1.1.254，10.1.1.255 是广播地址','ANDing the IP with mask 255.255.255.0 gives subnet 10.1.1.0. Usable hosts are 10.1.1.1 – 10.1.1.254; 10.1.1.255 is the broadcast address'),hl:['t-ipcalc'],pulse:[190,40],dur:2600},
+    {t:L('接口 Up 又配了 IP，路由器自动生成一条直连路由 10.1.1.0/24（Proto 是 Direct，优先级 0），不用手工配','With the interface up and addressed, the router automatically adds a direct route 10.1.1.0/24 (Proto Direct, preference 0) — nothing to configure'),hl:['rt1'],pulse:[52,rowY(1)],dur:2200},
+    {t:L('GE1/0/1 和 GE1/0/2 也一样生成直连路由。/30 的网段只有 2 个可用地址，正好给两台设备点对点互连','GE1/0/1 and GE1/0/2 get direct routes the same way. A /30 has only 2 usable addresses — just right for a point-to-point link'),hl:['rt2','rt3','t-if1','t-if2'],pulse:[52,rowY(3)],dur:2400},
+    {t:L('PC 10.1.1.10/24 和 GE1/0/0 在同一网段，所以 PC 的默认网关填 10.1.1.1。去其他网段的报文，PC 都先交给网关','PC 10.1.1.10/24 is in the same subnet as GE1/0/0, so its default gateway is 10.1.1.1. Anything for another subnet goes to the gateway first'),hl:['t-pc'],paths:[pc]}]},
+  {name:L('多条路由怎么选：优先级与最长匹配','Choosing among routes: preference and longest match'),color:CTRL,foot:L('同一网段有多条路由时，先比优先级、再比开销，选出的最优路由用来转发；转发时按最长匹配查表。','For one prefix, preference then cost picks the best route for forwarding; forwarding then uses longest match.'),steps:[
+    {t:L('路由有三个来源：直连（接口自动生成）、静态（管理员手工配置）、动态（OSPF、IS-IS、BGP 等协议自动学到）','Routes come from three sources: direct (from interfaces), static (configured by hand) and dynamic (learned by protocols such as OSPF, IS-IS and BGP)'),hl:['t-rtab'],pulse:[500,RTY+20],dur:2600},
+    {t:L('邻居 R2 运行 OSPF，把它后面的 172.16.0.0/16 和 172.16.1.0/24 通告过来，R1 自动学到两条动态路由','Neighbor R2 runs OSPF and advertises 172.16.0.0/16 and 172.16.1.0/24; R1 learns two dynamic routes automatically'),hl:['t-r2','rt4','rt6'],paths:[toR2.slice().reverse()]},
+    {t:L('管理员另外配了一条去 172.16.0.0/16 的静态路由，经运营商走。同一网段有两条路由，先比优先级（Pre），数值小的优先：OSPF 10 小于静态 60，OSPF 路由生效，静态的留作备份','An admin also configured a static route to 172.16.0.0/16 via the ISP. Two routes for one prefix: lower preference (Pre) wins. OSPF 10 beats static 60, so OSPF is used and the static route waits as a backup'),hl:['rt4','rt5','t-rsel'],pulse:[52,rowY(5)],dur:3000},
+    {t:L('PC 发来一个报文，目的地址 172.16.1.5','The PC sends a packet to 172.16.1.5'),hl:['t-pc'],paths:[pc]},
+    {t:L('查表：172.16.0.0/16、172.16.1.0/24 和默认路由 0.0.0.0/0 都包含这个地址。按最长匹配，选掩码最长、最精确的 172.16.1.0/24','Lookup: 172.16.0.0/16, 172.16.1.0/24 and the default route 0.0.0.0/0 all contain this address. Longest match picks the most specific one, 172.16.1.0/24'),hl:['rt6','t-rsel'],pulse:[52,rowY(6)],dur:2800},
+    {t:L('按这条路由，从 GE1/0/1 发给下一跳 10.2.2.2','Following that route, the packet goes out GE1/0/1 to next hop 10.2.2.2'),hl:['t-r2'],paths:[toR2]}]},
+  {name:L('逐包转发：查表、TTL 减 1','Forwarding a packet: lookup and TTL − 1'),color:DATA,foot:L('路由器只看目的 IP 决定下一跳，每台都独立查表，这就是"逐跳转发"。','Each router looks only at the destination IP and decides the next hop on its own — hop-by-hop forwarding.'),steps:[
+    {t:L('PC 访问互联网上的 203.0.113.10，报文进入 R1，IP 头里的 TTL 比如是 64','The PC reaches 203.0.113.10 on the Internet; the packet enters R1 with a TTL of, say, 64'),hl:['t-pc'],paths:[pc]},
+    {t:L('查表：只有默认路由 0.0.0.0/0 能匹配。它匹配所有地址，但掩码最短，是兜底的。下一跳 198.51.100.2，出接口 GE1/0/2','Lookup: only the default route 0.0.0.0/0 matches. It matches everything but has the shortest mask, so it is the fallback. Next hop 198.51.100.2, out GE1/0/2'),hl:['rt7'],pulse:[52,rowY(7)],dur:2600},
+    {t:L('转发前：TTL 减 1 变成 63，重新计算 IP 首部校验和，再换上新的二层头（源 MAC 换成出接口的 MAC）','Before sending: TTL drops to 63, the IP header checksum is recomputed, and a new L2 header is written (source MAC = outgoing interface)'),hl:['t-r1'],pulse:[500,200],dur:2600},
+    {t:L('从 GE1/0/2 发给运营商，由它继续逐跳转发。每经过一台路由器，TTL 都减 1','Out GE1/0/2 to the ISP, which forwards it on hop by hop. Every router on the way decrements TTL'),hl:['t-isp'],paths:[toIsp]},
+    {t:L('如果查不到任何路由（也没有默认路由），路由器会丢弃报文，并给源端回一个 ICMP 消息；TTL 减到 0 的报文也会被丢弃','If no route matches (and there is no default route), the router drops the packet and sends an ICMP message back to the source; packets whose TTL reaches 0 are dropped too'),hl:['t-r1'],pulse:[500,200],dur:2600}]}]}
+
+/* 防火墙：NAT Server */
+function topoNatSrv(){
+  [['dmz',20,120,320,180,'DMZ · 50'],['untrust',660,120,320,180,'Untrust · 5']].forEach(([id,x,y,w,h,t])=>{const g=grp(scene,{kb:'zone',id:'z2-'+id,tip:L('安全区域 ','Security zone ')+t});el('rect',{x,y,width:w,height:h,rx:14,class:'d-box zone'},g);T2(g,x+14,y+24,t,'d-t')});
+  tLink([[265,210],[380,210]]);tLink([[620,210],[735,210]]);
+  const fw=grp(scene,{kb:'fwChassis',id:'t-fw2',tip:'USG12000'});el('rect',{x:380,y:140,width:240,height:140,rx:14,class:'d-box l1'},fw);T2(fw,500,168,L('防火墙 USG12000','Firewall USG12000'),'d-t','middle');
+  tNode('t-natsrv','natserver',500,232,200,48,'NAT Server','198.51.100.10 → 172.16.1.10');
+  tNode('t-web2','natserver',180,210,170,62,L('DMZ Web 服务器','DMZ web server'),'172.16.1.10:80');
+  tNode('t-user','zone',820,210,170,62,L('互联网用户','Internet user'),'203.0.113.50');
+  tTable('secpolicy','t-pol2',275,10,450,L('安全策略','Security policy'),[[L('规则','Rule'),130],[L('区域','Zones'),130],[L('目的','Dest'),120],[L('动作','Action'),60]],[{id:'pol-web',cells:['untrust_to_web','untrust → dmz','172.16.1.10:80','permit']}]);
+  tTable('natserver','t-sm',20,330,440,L('Server-map（NAT Server 生成）','Server-map (from NAT Server)'),[[L('类型','Type'),100],[L('公网地址:端口','Public IP:port'),160],[L('私网地址:端口','Private IP:port'),160]],[{cells:['NAT Server','198.51.100.10:80','172.16.1.10:80']}]);
+  tTable('session','t-sess2',480,330,500,L('会话表','Session table'),[[L('协议','Proto'),60],[L('源 → 目的（方括号内是 NAT 后地址）','Source → destination (post-NAT in brackets)'),420]],[{cells:['tcp','203.0.113.50:40000 → 198.51.100.10:80[172.16.1.10:80]'],show:[0,2]}]);
+  tTag(678,240,L('目的 198.51.100.10','dst 198.51.100.10'),'natserver',0,1,1);tTag(322,240,L('目的 172.16.1.10','dst 172.16.1.10'),'natserver',0,3,3);tTag(678,240,L('源 198.51.100.10','src 198.51.100.10'),'natserver',0,4)}
+function topoNatSrvFlows(){return [
+  {name:L('外部用户访问 DMZ 服务器','An outside user reaches the DMZ server'),color:DATA,foot:L('Server-map 让外部主动发起的访问能找到内部服务器；之后的报文都查会话表。','The server-map lets connections started from outside find the internal server; later packets just hit the session.'),steps:[
+    {t:L('管理员配置 NAT Server：公网 198.51.100.10:80 对应 DMZ 服务器 172.16.1.10:80。设备据此生成一条 Server-map 表项，配置不删就一直在','The admin configures NAT Server: public 198.51.100.10:80 maps to DMZ server 172.16.1.10:80. The device creates a server-map entry that stays until the configuration is removed'),hl:['t-sm','t-natsrv'],pulse:[500,232],dur:2600},
+    {t:L('互联网用户访问 198.51.100.10:80，首包从 Untrust 接口进入防火墙','An Internet user connects to 198.51.100.10:80; the first packet enters on the Untrust interface'),hl:['t-user'],paths:[[[735,210],[620,210]]]},
+    {t:L('首包匹配 Server-map，目的地址改成 172.16.1.10:80；安全策略 untrust_to_web 放行。防火墙建立会话，记下转换前后的地址','The first packet matches the server-map and its destination becomes 172.16.1.10:80; policy untrust_to_web permits it. A session records the address before and after translation'),hl:['t-sm','t-pol2','t-sess2'],pulse:[500,232],dur:2800},
+    {t:L('报文转发给 DMZ 里的服务器','The packet is forwarded to the server in the DMZ'),hl:['t-web2'],paths:[[[380,210],[265,210]]]},
+    {t:L('服务器回包，防火墙按会话把源地址换回 198.51.100.10 再发出。外部用户始终只看到公网地址','The server replies; using the session, the firewall rewrites the source back to 198.51.100.10. The outside user only ever sees the public address'),hl:['t-user','t-sess2'],paths:[[[265,220],[380,220],[620,220],[735,220]]]}]}]}
+
+/* 防火墙：IPsec VPN */
+function topoIpsec(){
+  [['a',20,'分支 A · 10.1.1.0/24','Branch A · 10.1.1.0/24'],['b',580,'总部 B · 10.2.2.0/24','HQ B · 10.2.2.0/24']].forEach(([id,x,zh,en])=>{const g=grp(scene,{kb:'ipsec',id:'site-'+id,tip:L(zh,en)});el('rect',{x,y:210,width:400,height:170,rx:14,class:'d-box zone'},g);T2(g,x+14,234,L(zh,en),'d-t')});
+  tLink([[190,300],[250,300]]);tLink([[410,300],[590,300]]);tLink([[750,300],[810,300]]);
+  const net=grp(scene,{kb:'ipsec',id:'t-net',tip:L('互联网','Internet')});el('ellipse',{cx:500,cy:300,rx:62,ry:40,class:'d-box zone'},net);T2(net,500,345+12,L('互联网','Internet'),'d-s','middle');
+  const tun=grp(scene,{kb:'ike',id:'t-tun',tip:L('IPsec 隧道','IPsec tunnel')});el('rect',{x:404,y:284,width:192,height:32,rx:16,class:'d-box tunnel'},tun);T2(tun,500,250,L('IPsec 隧道','IPsec tunnel'),'d-s t-sm','middle');later(tun,0,2);
+  tNode('t-pca','ipsec',110,300,160,62,'PC','10.1.1.10');
+  tNode('t-fwa','ipsec',330,300,160,70,'FW_A',L('公网 198.51.100.1','public 198.51.100.1'),'l1');
+  tNode('t-fwb','ipsec',670,300,160,70,'FW_B',L('公网 203.0.113.1','public 203.0.113.1'),'l1');
+  tNode('t-srvb','ipsec',890,300,160,62,L('服务器','Server'),'10.2.2.20');
+  later(tPkt('t-orig','ipsec',40,L('原始报文（私网地址）','Original packet (private addresses)'),[[L('IP 头 10.1.1.10 → 10.2.2.20','IP hdr 10.1.1.10 → 10.2.2.20'),260],[L('数据','Data'),120]]),0,0);
+  later(tPkt('t-enc','ipsec',120,L('ESP 隧道模式封装后','After ESP tunnel-mode encapsulation'),[[L('新 IP 头 198.51.100.1 → 203.0.113.1','New IP hdr 198.51.100.1 → 203.0.113.1'),270],[L('ESP 头','ESP hdr'),80],[L('加密（原 IP 头 + 数据）','Encrypted (orig IP hdr + data)'),240,'enc'],[L('ESP 尾 + 认证','ESP trailer + ICV'),130]]),0,3)}
+function topoIpsecFlows(){return [
+  {name:L('分支和总部之间建 IPsec 隧道','Building an IPsec tunnel between branch and HQ'),color:DATA,foot:L('隧道空闲一段时间会自动拆除；下次再有感兴趣流时重新协商。','An idle tunnel is torn down automatically; new interesting traffic triggers a fresh negotiation.'),steps:[
+    {t:L('分支的 PC（10.1.1.10）要访问总部服务器 10.2.2.20。这是私网地址，不能直接在互联网上传，报文先到分支防火墙 FW_A','The branch PC (10.1.1.10) wants HQ server 10.2.2.20. Private addresses can\'t travel the Internet as-is, so the packet goes to the branch firewall FW_A first'),hl:['t-pca','t-orig'],paths:[[[190,300],[250,300]]]},
+    {t:L('FW_A 用 ACL 检查：10.1.1.0/24 → 10.2.2.0/24 的流量是需要保护的"感兴趣流"','FW_A checks its ACL: traffic from 10.1.1.0/24 to 10.2.2.0/24 is "interesting traffic" that must be protected'),hl:['t-fwa'],pulse:[330,300],dur:2200},
+    {t:L('还没有隧道，两端先用 IKE 协商：先建 IKE SA（认证身份、交换密钥），再建 IPsec SA（约定加密算法和密钥）','No tunnel yet, so both ends negotiate with IKE: first an IKE SA (authenticate, exchange keys), then an IPsec SA (agree on encryption algorithms and keys)'),hl:['t-fwa','t-fwb','t-tun'],paths:[[[410,290],[590,290]],[[590,310],[410,310]]]},
+    {t:L('加密封装（ESP 隧道模式）：整个原始报文被加密，前面加上 ESP 头和新的公网 IP 头 198.51.100.1 → 203.0.113.1，后面附上用来校验完整性的认证数据','Encrypt and encapsulate (ESP tunnel mode): the whole original packet is encrypted, an ESP header and a new public IP header 198.51.100.1 → 203.0.113.1 go in front, and integrity-check data goes at the end'),hl:['t-enc'],pulse:[330,300],dur:3000},
+    {t:L('报文穿过互联网，沿途设备只能看到两个公网地址和一段密文','The packet crosses the Internet; devices along the way see only two public addresses and ciphertext'),hl:['t-net'],paths:[[[410,300],[590,300]]]},
+    {t:L('FW_B 先校验认证数据，一致才解密（不一致就丢弃），去掉外层头，还原出原始报文发给服务器','FW_B checks the integrity data first and decrypts only if it matches (otherwise drops it), strips the outer header, and delivers the original packet to the server'),hl:['t-fwb','t-srvb'],paths:[[[750,300],[810,300]]]}]}]}
+
+const DEMOS={
+  router:[{id:'route',zh:'IP 寻址与路由',en:'IP & routing',kb:'rtable',draw:topoRoute,flows:topoRouteFlows}],
+  switch:[{id:'mac',zh:'MAC 表与 VLAN',en:'MAC table & VLAN',kb:'mactable',draw:topoSwitch,flows:topoSwitchFlows},{id:'trunk',zh:'Trunk 口',en:'Trunk ports',kb:'trunkport',draw:topoTrunk,flows:topoTrunkFlows}],
+  fw:[{id:'policy',zh:'安全策略与源 NAT',en:'Policy & source NAT',kb:'zone',draw:topoFw,flows:topoFwFlows},{id:'natsrv',zh:'NAT Server',en:'NAT Server',kb:'natserver',draw:topoNatSrv,flows:topoNatSrvFlows},{id:'ipsec',zh:'IPsec VPN',en:'IPsec VPN',kb:'ipsec',draw:topoIpsec,flows:topoIpsecFlows}],
+  ads:[{id:'ads',zh:'检测与清洗',en:'Detect & scrub',kb:'detect',draw:topoAds,flows:topoAdsFlows}]};
+const demos=()=>DEMOS[DEV]||[],demoOf=v=>demos().find(d=>d.id===v.d)||demos()[0];
+function drawTopo(v){demoOf(v).draw()}
+function topoFlows(){return demoOf(view).flows()}
+const demosEl=document.getElementById('demos');
+function demoBar(){demosEl.innerHTML='';demosEl.hidden=view.k!=='topo';if(view.k!=='topo')return;demos().forEach(d=>{const b=document.createElement('button');b.textContent=L(d.zh,d.en);b.setAttribute('aria-pressed',String(d.id===view.d));b.onclick=()=>{sel=null;go({k:'topo',d:d.id})};demosEl.appendChild(b)})}
 
 /* 其他设备在机框上的报文动画（通用原理示意） */
 function devChassisFlows(){const s=n=>SX(n)+26,Dn=D+6,z=200,BP=40,IN=D-60;
@@ -732,14 +914,15 @@ const flowsEl=document.getElementById('flows'),cap=document.getElementById('capt
 function flowButtons(){flowsEl.innerHTML='';currentFlows().forEach((f,i)=>{const b=document.createElement('button');b.innerHTML=`<span class="dot" style="background:${f.color}"></span>▶ ${esc(f.name)}`;b.onclick=()=>playFlow(i,0);flowsEl.appendChild(b)})}
 let A=null;const PJ=a=>a.length===2?a:P(...a);
 function stopFlow(){if(A){cancelAnimationFrame(A.raf);clearTimeout(A.to)}A=null;fx.innerHTML='';cap.hidden=true;scene.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash'));flowsEl.querySelectorAll('button').forEach(b=>b.classList.remove('playing'));
-  scene.querySelectorAll('.later.on').forEach(n=>n.classList.remove('on'));
+  scene.querySelectorAll('.later.on').forEach(n=>n.classList.remove('on'));scene.querySelectorAll('.hid').forEach(n=>n.classList.remove('hid'));
   if(view.k==='chassis')scene.classList.toggle('xray',xray)}
 function playFlow(fi,si){const f=currentFlows()[fi];if(!f)return;stopFlow();A={fi,si,f};flowsEl.children[fi]?.classList.add('playing');if(view.k==='chassis')scene.classList.add('xray');runStep()}
 function runStep(){const {f,si}=A;const st=f.steps[si];if(!st){A.to=setTimeout(()=>{if(A)A.done=true},10);return}
   scene.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash'));(st.hl||[]).forEach(id=>scene.querySelector(`[data-id="${CSS.escape(id)}"]`)?.classList.add('flash'));
   cap.hidden=false;cap.innerHTML=`<div class="n">${si+1}/${f.steps.length}</div><div class="t">${esc(st.t)}${si===f.steps.length-1?`<small>${esc(f.foot)}</small>`:''}</div><div class="ctl"><button id="cp" aria-label="${L('上一步','Previous')}">‹</button><button id="cn" aria-label="${L('下一步','Next')}">›</button><button id="cx" aria-label="${L('关闭','Close')}">✕</button></div>`;
   cap.querySelector('#cp').onclick=()=>{if(A.si>0)jump(A.si-1)};cap.querySelector('#cn').onclick=()=>{if(A.si<f.steps.length-1)jump(A.si+1)};cap.querySelector('#cx').onclick=stopFlow;
-  scene.querySelectorAll('[data-show]').forEach(e=>{const [f2,s2]=e.dataset.show.split(':').map(Number);e.classList.toggle('on',A.fi===f2&&si>=s2)});
+  scene.querySelectorAll('[data-show]').forEach(e=>{const [f2,s2,u2]=e.dataset.show.split(':').map(Number);e.classList.toggle('on',A.fi===f2&&si>=s2&&!(u2<si))});
+  scene.querySelectorAll('[data-hide]').forEach(e=>e.classList.toggle('hid',e.dataset.hide.split(',').some(x=>{const [f2,s2]=x.split(':').map(Number);return A.fi===f2&&si<s2})));
   fx.querySelectorAll('.fx-dot,.pulse').forEach(n=>n.remove());
   if(st.pulse){const q=PJ(st.pulse);el('circle',{cx:q[0],cy:q[1],r:6,class:'fx-dot',fill:f.color},fx);el('circle',{cx:q[0],cy:q[1],r:4,class:'pulse',stroke:f.color},fx);A.to=setTimeout(next,st.dur||1800);return}
   const lines=(st.paths||[]).map(p=>{const q=p.map(PJ);let LL=0;const seg=[];for(let i=1;i<q.length;i++){const l=Math.hypot(q[i][0]-q[i-1][0],q[i][1]-q[i-1][1]);seg.push(l);LL+=l}
@@ -852,7 +1035,7 @@ function updXP(pop){const n=[...seen].filter(k=>KB[k]).length,t=Object.keys(KB).
 /* ============ 设备切换 ============ */
 const devbarEl=document.getElementById('devbar');
 function devBar(){devbarEl.innerHTML='';Object.entries(DEVS).forEach(([id,d])=>{const b=document.createElement('button');b.textContent=L(d.zh,d.en);b.setAttribute('aria-pressed',String(id===DEV));b.onclick=()=>setDev(id);devbarEl.appendChild(b)});
-  if(dv().topo){const b=document.createElement('button');b.className='how';b.textContent='▶ '+L('原理演示','How it works');b.setAttribute('aria-pressed',String(view.k==='topo'));b.onclick=()=>{sel=null;go({k:'topo'})};devbarEl.appendChild(b)}}
+  if(demos().length){const b=document.createElement('button');b.className='how';b.textContent='▶ '+L('原理演示','How it works');b.setAttribute('aria-pressed',String(view.k==='topo'));b.onclick=()=>{sel=null;go({k:'topo'})};devbarEl.appendChild(b)}}
 function setDev(id){if(!DEVS[id])return;DEV=id;store.set('dc-dev',id);sel=null;go({k:'chassis'})}
 
 /* ============ 语言切换 ============ */
@@ -864,7 +1047,7 @@ const STATIC_TXT=[ // [选择器, 属性, 中文, English]
   ['#skins','aria-label','页面风格','Page style'],
   ['#zin','title','放大','Zoom in'],['#zin','aria-label','放大','Zoom in'],['#zout','title','缩小','Zoom out'],['#zout','aria-label','缩小','Zoom out'],
   ['#zfit','title','重置视角','Reset view'],['#zfit','aria-label','重置视角','Reset view'],['#xray','title','透视机框','X-ray chassis'],['#xray','aria-label','透视机框','X-ray chassis'],
-  ['#devbar','aria-label','设备','Devices'],['#svg','aria-label','设备视图','Device view'],['#tab-info','textContent','讲解','Explain'],['#tab-cli','textContent','命令行实验','CLI Lab'],
+  ['#devbar','aria-label','设备','Devices'],['#demos','aria-label','演示','Demos'],['#svg','aria-label','设备视图','Device view'],['#tab-info','textContent','讲解','Explain'],['#tab-cli','textContent','命令行实验','CLI Lab'],
   ['#pane-cli > .note','innerHTML',document.querySelector('#pane-cli > .note').innerHTML,'<b>Teaching simulation</b>: commands follow the Huawei configuration guide. Config commands first change the "candidate configuration" (the prompt shows <code>*</code>); only after <code>commit</code> do they take effect and show on the device at left. For example, <code>shutdown</code> an interface, then <code>commit</code>, and its port LED goes dark.'],
   ['#cmd','aria-label','命令输入','Command input'],['#cmd','placeholder','输入命令，? 查看帮助','Type a command, ? for help']];
 const langBtn=document.getElementById('langbtn');
