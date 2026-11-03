@@ -184,11 +184,19 @@ pre.cfg .c{color:#7f939d}
 .d-box.tunnel{fill:var(--accent-soft);stroke:var(--ok);stroke-width:2;stroke-dasharray:6 4;opacity:.85}
 .demos button{font-size:12px;padding:4px 10px;border-radius:999px}
 .d-panel{fill:var(--panel-f)} .d-cage{fill:var(--cage-f)} .d-opt{fill:var(--optic-f);stroke:var(--optic-s)}
-.fx-trail{fill:none;stroke-width:2.5;stroke-dasharray:3 5;opacity:.55}
-.fx-dot{stroke:#fff;stroke-width:1.5}
-.pulse{fill:none;stroke-width:2;animation:pulse 1.2s ease-out infinite}
-@keyframes pulse{from{r:4;opacity:1}to{r:34;opacity:0}}
-@media (prefers-reduced-motion: reduce){.blink,.flash,.pulse{animation:none}.slide,#scene{transition:none}}
+.fx-trail{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.45;vector-effect:non-scaling-stroke;transition:opacity .4s}
+.fx-trail.old{opacity:.16}
+.fx-flow{fill:none;stroke:var(--surface);stroke-width:2;stroke-dasharray:2 12;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.9;animation:fxflow .7s linear infinite}
+@keyframes fxflow{to{stroke-dashoffset:-14}}
+.fx-dot{stroke:var(--surface);stroke-width:2.5}
+.fx-halo{opacity:.28;animation:fxhalo 1s ease-in-out infinite alternate}
+@keyframes fxhalo{from{opacity:.15}to{opacity:.4}}
+.fx-lab{font-family:var(--f-ui);font-size:13px;font-weight:600;fill:var(--fg)}
+.fx-labbg{fill:var(--surface);stroke-width:1.5}
+.pulse{fill:none;stroke-width:3;animation:pulse 1.4s ease-out infinite}
+.pulse.p2{animation-delay:.7s}
+@keyframes pulse{from{r:8;opacity:1}to{r:46;opacity:0}}
+@media (prefers-reduced-motion: reduce){.blink,.flash,.pulse,.fx-flow,.fx-halo{animation:none}.slide,#scene{transition:none}}
 
 @media (max-width:860px){
   .app{grid-template-columns:1fr;height:auto}
@@ -252,7 +260,7 @@ pre.cfg .c{color:#7f939d}
 [data-skin="neon"] .bx polygon{stroke:rgba(25,227,255,.5);stroke-width:.8}
 [data-skin="neon"] .led.on{filter:drop-shadow(0 0 3px #3dff9a)}
 [data-skin="neon"] .fx-dot{filter:drop-shadow(0 0 7px #fff)}
-[data-skin="neon"] .fx-trail{opacity:.9}
+[data-skin="neon"] .fx-trail{opacity:.75} [data-skin="neon"] .fx-trail.old{opacity:.2}
 [data-skin="neon"] .trace{stroke:#19e3ff;stroke-opacity:.6}
 [data-skin="neon"] .brand b{color:var(--accent);text-shadow:0 0 12px rgba(25,227,255,.6);letter-spacing:.06em}
 [data-skin="neon"] .pane h2{text-shadow:0 0 14px rgba(25,227,255,.35)}

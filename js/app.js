@@ -882,29 +882,29 @@ document.getElementById('tab-info').onclick=()=>setTab('info');document.getEleme
 const DATA='var(--accent)',CTRL='var(--ctrl)';
 function chassisFlows(){const s=n=>SX(n)+26,Dn=D+6,ge=GE_Z(0),hg=HG_Z(0),BP=40,IN=D-60;
   return [
-  {name:L('数据报文穿越路由器','A data packet crosses the router'),color:DATA,foot:L('全程没有经过主控板 MPU，这就是"分布式转发"。','It never touched the MPU — that is "distributed forwarding".'),steps:[
+  {name:L('数据报文穿越路由器','A data packet crosses the router'),color:DATA,tok:L('IP 报文 → 10.0.13.2','IP packet → 10.0.13.2'),foot:L('全程没有经过主控板 MPU，这就是"分布式转发"。','It never touched the MPU — that is "distributed forwarding".'),steps:[
     {t:L('报文从 1 号槽接口板的 GigabitEthernet1/0/0 进入路由器','The packet enters the router on GigabitEthernet1/0/0 of the line card in slot 1'),hl:['p:GigabitEthernet1/0/0'],paths:[[[s(1),D+110,ge],[s(1),Dn,ge]]]},
     {t:L('1 号槽 LPU 的 NP 查 FIB：目的地址 10.0.13.2 的出接口是 100GE3/1/0，在 3 号槽','The NP on the slot 1 LPU looks up the FIB: destination 10.0.13.2 leaves via 100GE3/1/0, in slot 3'),hl:['slot:1'],paths:[[[s(1),Dn,ge],[s(1),IN,ge]]]},
-    {t:L('报文被切成信元，经背板送到交换网板 SFU','The packet is sliced into cells and sent over the backplane to the switch fabric (SFU)'),hl:['slot:7','backplane'],paths:[[[s(1),IN,ge],[s(1),BP,ge],[s(7),BP,ge]]]},
-    {t:L('SFU 把信元交换到目的槽位：3 号槽','The SFU switches the cells to the destination slot: slot 3'),hl:['slot:7'],paths:[[[s(7),BP,ge],[s(3),BP,ge]]]},
+    {t:L('报文被切成信元，经背板送到交换网板 SFU','The packet is sliced into cells and sent over the backplane to the switch fabric (SFU)'),hl:['slot:7','backplane'],tok:L('信元','cells'),paths:[[[s(1),IN,ge],[s(1),BP,ge],[s(7),BP,ge]]]},
+    {t:L('SFU 把信元交换到目的槽位：3 号槽','The SFU switches the cells to the destination slot: slot 3'),hl:['slot:7'],tok:L('信元','cells'),paths:[[[s(7),BP,ge],[s(3),BP,ge]]]},
     {t:L('3 号槽 LPU 把信元重组成报文，TM 在出方向排队调度','The slot 3 LPU reassembles the cells into a packet; the TM queues and schedules it on the way out'),hl:['slot:3'],paths:[[[s(3),BP,ge],[s(3),IN,hg]]]},
     {t:L('报文从 100GE3/1/0 发出，前往下一跳','The packet leaves on 100GE3/1/0 toward the next hop'),hl:['p:100GE3/1/0'],paths:[[[s(3),IN,hg],[s(3),Dn,hg],[s(3),D+120,hg]]]}]},
-  {name:L('协议报文上送 + 转发表下发','Protocol packet up, forwarding table down'),color:CTRL,foot:L('控制平面（MPU）负责"算"，转发平面（LPU）负责"转"。','The control plane (MPU) computes; the forwarding plane (LPU) forwards.'),steps:[
+  {name:L('协议报文上送 + 转发表下发','Protocol packet up, forwarding table down'),color:CTRL,tok:'OSPF Hello',foot:L('控制平面（MPU）负责"算"，转发平面（LPU）负责"转"。','The control plane (MPU) computes; the forwarding plane (LPU) forwards.'),steps:[
     {t:L('邻居发来一个 OSPF Hello 报文，从 GigabitEthernet1/0/0 进入','A neighbor sends an OSPF Hello, which arrives on GigabitEthernet1/0/0'),hl:['p:GigabitEthernet1/0/0'],paths:[[[s(1),D+110,ge],[s(1),Dn,ge]]]},
     {t:L('NP 发现它是发给本机的协议报文（目的地址 224.0.0.5），不转发，走上送通道','The NP sees a protocol packet for this device (destination 224.0.0.5): no forwarding, it goes up to the control plane'),hl:['slot:1'],paths:[[[s(1),Dn,ge],[s(1),IN,ge]]]},
     {t:L('报文经背板的管理通道上送到主用主控板 MPU（5 号槽）','It travels over the backplane management channel to the active MPU (slot 5)'),hl:['slot:5','backplane'],paths:[[[s(1),IN,ge],[s(1),BP,ge],[s(5),BP,300],[s(5),IN,300]]]},
-    {t:L('MPU 运行 OSPF：维护邻居、同步链路状态数据库、计算最短路径，生成路由表 RIB，选优后得到转发表 FIB','The MPU runs OSPF: keeps neighbors, syncs the link-state database, computes shortest paths, builds the RIB and picks the best routes into the FIB'),hl:['slot:5'],pulse:[s(5),IN,300],dur:2200},
-    {t:L('MPU 把 FIB 下发到每一块接口板，写进各自 NP 的转发表','The MPU pushes the FIB to every line card, into each NP\'s forwarding table'),hl:LPUS.map(n=>'slot:'+n),paths:LPUS.map(n=>[[s(5),IN,300],[s(5),BP,300],[s(n),BP,300],[s(n),IN,300]])},
-    {t:L('主用 MPU 同时把状态同步给备用 MPU（6 号槽），主控倒换时业务不中断','The active MPU also syncs its state to the standby MPU (slot 6), so a switchover doesn\'t interrupt services'),hl:['slot:6'],paths:[[[s(5),IN,300],[s(5),BP,300],[s(6),BP,300],[s(6),IN,300]]]}]}]}
+    {t:L('MPU 运行 OSPF：维护邻居、同步链路状态数据库、计算最短路径，生成路由表 RIB，选优后得到转发表 FIB','The MPU runs OSPF: keeps neighbors, syncs the link-state database, computes shortest paths, builds the RIB and picks the best routes into the FIB'),hl:['slot:5'],tok:L('计算路由','computing routes'),pulse:[s(5),IN,300],dur:2600},
+    {t:L('MPU 把 FIB 下发到每一块接口板，写进各自 NP 的转发表','The MPU pushes the FIB to every line card, into each NP\'s forwarding table'),hl:LPUS.map(n=>'slot:'+n),tok:L('FIB 表项','FIB entries'),paths:LPUS.map(n=>[[s(5),IN,300],[s(5),BP,300],[s(n),BP,300],[s(n),IN,300]])},
+    {t:L('主用 MPU 同时把状态同步给备用 MPU（6 号槽），主控倒换时业务不中断','The active MPU also syncs its state to the standby MPU (slot 6), so a switchover doesn\'t interrupt services'),hl:['slot:6'],tok:L('状态同步','state sync'),paths:[[[s(5),IN,300],[s(5),BP,300],[s(6),BP,300],[s(6),IN,300]]]}]}]}
 function boardFlows(n){if(slotOf(n).type!=='LPU')return[];const Y=412;
   return [
-  {name:L('报文在接口板内的处理','Inside the line card'),color:DATA,foot:L('这几步在硬件里只需要几微秒。','In hardware, all of this takes only a few microseconds.'),steps:[
-    {t:L(`光纤里的光信号进入 GigabitEthernet${n}/0/0 的光模块，被转换成电信号`,`Light from the fiber enters the optical module of GigabitEthernet${n}/0/0 and becomes an electrical signal`),hl:['p:'+portIf(n,0,0)],paths:[[[55,Y+120,35],[55,Y,35]]]},
+  {name:L('报文在接口板内的处理','Inside the line card'),color:DATA,tok:L('以太网帧','Ethernet frame'),foot:L('这几步在硬件里只需要几微秒。','In hardware, all of this takes only a few microseconds.'),steps:[
+    {t:L(`光纤里的光信号进入 GigabitEthernet${n}/0/0 的光模块，被转换成电信号`,`Light from the fiber enters the optical module of GigabitEthernet${n}/0/0 and becomes an electrical signal`),hl:['p:'+portIf(n,0,0)],tok:L('光信号','light'),paths:[[[55,Y+120,35],[55,Y,35]]]},
     {t:L('子卡上的 PHY/MAC 把比特流组装成以太网帧，检查 FCS 校验，坏帧直接丢弃','The PHY/MAC on the subcard assembles bits into an Ethernet frame and checks the FCS; bad frames are dropped'),hl:['c:pic0'],paths:[[[55,Y,35],[55,380,36],[155,300,36]]]},
     {t:L('NP 解析报文头，到 TCAM 查 FIB 得到出接口和下一跳；TTL 减 1，重写二层头','The NP parses the headers and looks up the FIB in the TCAM for the outgoing interface and next hop; TTL minus 1, new L2 header'),hl:['c:np','c:tcam'],paths:[[[155,300,36],[155,175,10],[210,120,44]]]},
     {t:L('TM 按优先级把报文放入队列，带宽不够时按策略调度或丢弃，QoS 就在这里执行','The TM queues the packet by priority and schedules or drops by policy when bandwidth is short — this is where QoS happens'),hl:['c:tm'],paths:[[[210,120,44],[345,125,20]]]},
-    {t:L('报文被切成信元，从背板连接器送往交换网板 SFU','The packet is sliced into cells and sent through the backplane connector to the SFU'),hl:['c:conn'],paths:[[[345,125,20],[345,20,48],[345,-100,48]]]}]},
-  {name:L('转发表下发到接口板','Forwarding table down to the line card'),color:CTRL,foot:L('接口板 CPU 只管"写表"，逐包转发由 NP 完成。','The line card CPU only writes tables; per-packet forwarding is done by the NP.'),steps:[
+    {t:L('报文被切成信元，从背板连接器送往交换网板 SFU','The packet is sliced into cells and sent through the backplane connector to the SFU'),hl:['c:conn'],tok:L('信元','cells'),paths:[[[345,125,20],[345,20,48],[345,-100,48]]]}]},
+  {name:L('转发表下发到接口板','Forwarding table down to the line card'),color:CTRL,tok:L('FIB 表项','FIB entries'),foot:L('接口板 CPU 只管"写表"，逐包转发由 NP 完成。','The line card CPU only writes tables; per-packet forwarding is done by the NP.'),steps:[
     {t:L('主控板算好的 FIB 经背板管理通道送到本板','The FIB computed by the MPU arrives over the backplane management channel'),hl:['c:conn'],paths:[[[470,-100,48],[470,20,48]]]},
     {t:L('接口板 CPU 收到表项','The line card CPU receives the entries'),hl:['c:lcpu'],paths:[[[470,20,48],[475,90,16]]]},
     {t:L('CPU 把表项写进 TCAM 表项存储','The CPU writes them into the TCAM'),hl:['c:tcam'],paths:[[[475,90,16],[475,160,14]]]},
@@ -923,14 +923,21 @@ function runStep(){const {f,si}=A;const st=f.steps[si];if(!st){A.to=setTimeout((
   cap.querySelector('#cp').onclick=()=>{if(A.si>0)jump(A.si-1)};cap.querySelector('#cn').onclick=()=>{if(A.si<f.steps.length-1)jump(A.si+1)};cap.querySelector('#cx').onclick=stopFlow;
   scene.querySelectorAll('[data-show]').forEach(e=>{const [f2,s2,u2]=e.dataset.show.split(':').map(Number);e.classList.toggle('on',A.fi===f2&&si>=s2&&!(u2<si))});
   scene.querySelectorAll('[data-hide]').forEach(e=>e.classList.toggle('hid',e.dataset.hide.split(',').some(x=>{const [f2,s2]=x.split(':').map(Number);return A.fi===f2&&si<s2})));
-  fx.querySelectorAll('.fx-dot,.pulse').forEach(n=>n.remove());
-  if(st.pulse){const q=PJ(st.pulse);el('circle',{cx:q[0],cy:q[1],r:6,class:'fx-dot',fill:f.color},fx);el('circle',{cx:q[0],cy:q[1],r:4,class:'pulse',stroke:f.color},fx);A.to=setTimeout(next,st.dur||1800);return}
-  const lines=(st.paths||[]).map(p=>{const q=p.map(PJ);let LL=0;const seg=[];for(let i=1;i<q.length;i++){const l=Math.hypot(q[i][0]-q[i-1][0],q[i][1]-q[i-1][1]);seg.push(l);LL+=l}
-    el('polyline',{points:q.map(a=>a.join(',')).join(' '),class:'fx-trail',stroke:f.color},fx);const dot=el('circle',{r:6,class:'fx-dot',fill:f.color},fx);return {q,seg,LL,dot}});
-  const dur=st.dur||Math.max(900,Math.max(...lines.map(l=>l.LL))*5.5),t0=performance.now();
+  fx.querySelectorAll('.fx-tok,.fx-pulse,.fx-flow').forEach(n=>n.remove());fx.querySelectorAll('.fx-trail').forEach(n=>n.classList.add('old'));
+  const lab=st.tok??f.tok;
+  if(st.pulse){const q=PJ(st.pulse);const pg=el('g',{class:'fx-pulse'},fx);el('circle',{r:4,class:'pulse',stroke:f.color},pg);el('circle',{r:4,class:'pulse p2',stroke:f.color},pg);const tk=mkTok(f.color,lab);const u=upx();[pg,tk].forEach(g=>g.setAttribute('transform',`translate(${q[0]},${q[1]}) scale(${u})`));A.to=setTimeout(next,st.dur||1800);return}
+  const lines=(st.paths||[]).map((p,pi)=>{const q=p.map(PJ);let LL=0;const seg=[];for(let i=1;i<q.length;i++){const l=Math.hypot(q[i][0]-q[i-1][0],q[i][1]-q[i-1][1]);seg.push(l);LL+=l}
+    const pts=q.map(a=>a.join(',')).join(' ');el('polyline',{points:pts,class:'fx-trail',stroke:f.color},fx);el('polyline',{points:pts,class:'fx-flow'},fx);const dot=mkTok(f.color,pi===0?lab:null);return {q,seg,LL,dot}});
+  if(lines[0])fx.appendChild(lines[0].dot);
+  const dur=st.dur||Math.max(1500,Math.max(...lines.map(l=>l.LL))*7),t0=performance.now();
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const tok={};A.cur=tok;const tick=now=>{if(!A||A.cur!==tok)return;const t=reduce?1:Math.min(1,(now-t0)/dur);lines.forEach(l=>{let d=t*l.LL,i=0;while(i<l.seg.length-1&&d>l.seg[i]){d-=l.seg[i];i++}const r=l.seg[i]?d/l.seg[i]:1;const a=l.q[i],b=l.q[i+1]||a;l.dot.setAttribute('cx',a[0]+(b[0]-a[0])*r);l.dot.setAttribute('cy',a[1]+(b[1]-a[1])*r)});
+  const tok={};A.cur=tok;const tick=now=>{if(!A||A.cur!==tok)return;const u=upx();const t=reduce?1:Math.min(1,(now-t0)/dur);lines.forEach(l=>{let d=t*l.LL,i=0;while(i<l.seg.length-1&&d>l.seg[i]){d-=l.seg[i];i++}const r=l.seg[i]?d/l.seg[i]:1;const a=l.q[i],b=l.q[i+1]||a;l.dot.setAttribute('transform',`translate(${a[0]+(b[0]-a[0])*r},${a[1]+(b[1]-a[1])*r}) scale(${u})`)});
     if(t<1)A.raf=requestAnimationFrame(tick);else A.to=setTimeout(next,1500)};A.raf=requestAnimationFrame(tick)}
+/* 报文块：屏幕上大小固定（不随缩放变小），带标签说明当前是什么报文 */
+function upx(){const vb=svg.viewBox.baseVal,r=svg.getBoundingClientRect();return (vb&&vb.width&&r.width?vb.width/r.width:1)/vt.k}
+function mkTok(color,label){const g=el('g',{class:'fx-tok'},fx);el('circle',{r:17,class:'fx-halo',fill:color},g);el('circle',{r:10,class:'fx-dot',fill:color},g);
+  if(label){const t=el('text',{x:18,y:-16,class:'fx-lab'},g);t.textContent=label;const bb=t.getBBox();g.insertBefore(el('rect',{x:bb.x-7,y:bb.y-4,width:bb.width+14,height:bb.height+8,rx:9,class:'fx-labbg',stroke:color},g),t)}
+  return g}
 function next(){if(!A)return;if(A.si<A.f.steps.length-1){A.si++;runStep()}}
 function jump(i){cancelAnimationFrame(A.raf);clearTimeout(A.to);A.si=i;if(i===0)fx.innerHTML='';runStep()}
 
