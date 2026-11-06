@@ -13,6 +13,14 @@ python3 -m http.server 8000
 
 也可以在仓库的 Settings → Pages 里把 `main` 分支发布为 GitHub Pages。
 
+## 学习范围与文档
+
+- 学习范围：**运营商 IP 网络**（骨干网、城域网、IP 承载网），不包括园区网和企业网。
+- 产品规划书（愿景、知识体系、学习路径、路线图）：<https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>
+- 开发文档（流程、架构、决策记录、规格、测试计划、待办）：[docs/README.md](docs/README.md)
+- 变更日志：[CHANGELOG.md](CHANGELOG.md)
+- 自动测试：`node tests/smoke.js`（需要 Playwright）
+
 ## 当前内容：设备结构与基础配置
 
 - **逐层拆解**：机框 → 单板（LPU / MPU / SFU）→ 子卡 → 端口 → 接口。滚轮或双指缩放，拖动平移，点击部件深入。
