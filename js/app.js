@@ -45,14 +45,13 @@ const protoUp=i=>phyUp(i)&&(i.kind==='null'||!!i.ip)&&(i.kind!=='sub'||!!i.vid);
 const portIf=(n,p,k)=>`${PICS[p].prefix}${n}/${p}/${k}`;
 function macOf(name){let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;const b=[0x00,0xe0,0xfc,(h>>16)&255,(h>>8)&255,h&255].map(v=>v.toString(16).padStart(2,'0'));return `${b[0]}${b[1]}-${b[2]}${b[3]}-${b[4]}${b[5]}`}
 
-/* ---------- 多种设备：路由器 / 交换机 / 防火墙 / 抗 DDoS（槽位布局都是简化示意） ---------- */
+/* ---------- 多种设备：路由器 / 交换机 / 防火墙（槽位布局都是简化示意） ---------- */
 let DEV=(()=>{try{return localStorage.getItem('dc-dev')}catch(e){return null}})();
 const mkSlots=a=>a.map(([n,type,kb,role])=>({n,type,kb,role}));
 const DEVS={
   router:{zh:'路由器',en:'Router',kb:'chassis',slots:SLOTS},
   switch:{zh:'交换机',en:'Switch',model:'S12700E',kb:'swChassis',slots:mkSlots([[1,'LPU','swLPU'],[2,'LPU','swLPU'],[3,'LPU','swLPU'],[4,'LPU','swLPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'LPU','swLPU'],[10,'CMU','cmu']])},
-  fw:{zh:'防火墙',en:'Firewall',model:'USG12000',kb:'fwChassis',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','fwSPU'],[4,'SPU','fwSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','fwSPU'],[10,null]])},
-  ads:{zh:'抗 DDoS',en:'Anti-DDoS',model:'AntiDDoS12000',kb:'adsChassis',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','adsSPU'],[4,'SPU','adsSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','adsSPU'],[10,'SPU','adsSPU']])}};
+  fw:{zh:'防火墙',en:'Firewall',model:'USG12000',kb:'fwChassis',slots:mkSlots([[1,'LPU','xLPU'],[2,'LPU','xLPU'],[3,'SPU','fwSPU'],[4,'SPU','fwSPU'],[5,'MPU','MPU','主用'],[6,'MPU','MPU','备用'],[7,'SFU','SFU'],[8,'SFU','SFU'],[9,'SPU','fwSPU'],[10,null]])}};
 if(!DEVS[DEV])DEV='router';
 const dv=()=>DEVS[DEV],skb=s=>s.kb||s.type;
 
@@ -177,16 +176,15 @@ vpnpre:{title:'Bind a VPN Instance',sum:'Once an interface (or sub-interface) is
 function kbOf(key){const k=KB[key];if(!k)return null;if(LANG!=='en')return k;const e=KB_EN[key]||{};
   return {...k,...e,tag:TAG_EN[k.tag]||k.tag,title:e.title||k.en,en:k.title,drill:e.drill||(k.drill&&(DRILL_EN[k.drill]||k.drill)),pts:e.pts||k.pts}}
 
-/* ---------- 交换机 / 防火墙 / 抗 DDoS 的讲解条目（参数来自华为公开资料，通用原理单独标注） ---------- */
+/* ---------- 交换机 / 防火墙的讲解条目（参数来自华为公开资料，通用原理单独标注） ---------- */
 const SRC={
   s12700e:['CloudEngine S12700E 产品页（华为官网）','https://e.huawei.com/en/products/switches/campus-switches/s12700e'],
   s12700eCards:['CloudEngine S12700E 硬件描述：单板类型','https://support.huawei.com/enterprise/en/doc/EDOC1100089142/fcf3a10c/card-types'],
   vlanEx:['华为 S 系列交换机配置举例：基于接口划分 VLAN','https://support.huawei.com/enterprise/en/doc/EDOC1000141870/e2b68f76/example-for-configuring-interface-based-vlan-assignment-access-device-used-as-the-gateway'],
   usg12000:['HiSecEngine USG12000 产品页（华为官网）','https://e.huawei.com/en/products/security/usg12000'],
   zones:['华为配置指南：理解安全区域','https://support.huawei.com/enterprise/en/doc/EDOC1100336503/1e162ed7/understanding-security-zones'],
-  session:['华为防火墙故障处理：检查会话表','https://support.huawei.com/enterprise/en/doc/EDOC1000179232/53e2aee8/checking-the-session-table'],
-  ads:['AntiDDoS12000 系列 Datasheet（华为公开资料）','https://carrier.huawei.com/~/media/CNBGV2/download/products/networks/AntiDDoS12000-Series-DDoS-en.pdf']};
-Object.assign(SRC_EN,{'CloudEngine S12700E 产品页（华为官网）':'CloudEngine S12700E product page (Huawei)','CloudEngine S12700E 硬件描述：单板类型':'CloudEngine S12700E Hardware Description: card types','华为 S 系列交换机配置举例：基于接口划分 VLAN':'Huawei S series switch example: interface-based VLAN assignment','HiSecEngine USG12000 产品页（华为官网）':'HiSecEngine USG12000 product page (Huawei)','华为配置指南：理解安全区域':'Huawei configuration guide: Understanding security zones','华为防火墙故障处理：检查会话表':'Huawei firewall troubleshooting: Checking the session table','AntiDDoS12000 系列 Datasheet（华为公开资料）':'AntiDDoS12000 Series Datasheet (Huawei public document)'});
+  session:['华为防火墙故障处理：检查会话表','https://support.huawei.com/enterprise/en/doc/EDOC1000179232/53e2aee8/checking-the-session-table']};
+Object.assign(SRC_EN,{'CloudEngine S12700E 产品页（华为官网）':'CloudEngine S12700E product page (Huawei)','CloudEngine S12700E 硬件描述：单板类型':'CloudEngine S12700E Hardware Description: card types','华为 S 系列交换机配置举例：基于接口划分 VLAN':'Huawei S series switch example: interface-based VLAN assignment','HiSecEngine USG12000 产品页（华为官网）':'HiSecEngine USG12000 product page (Huawei)','华为配置指南：理解安全区域':'Huawei configuration guide: Understanding security zones','华为防火墙故障处理：检查会话表':'Huawei firewall troubleshooting: Checking the session table'});
 Object.assign(TAG_EN,{'单板 · 示意':'Board · illustrative','概念 · 通用原理':'Concept · generic principle'});
 const CFG_NOTE=['命令为示意，具体语法以对应设备和版本的华为配置指南为准。','Illustrative commands; check the Huawei configuration guide for your device and version for the exact syntax.'];
 Object.assign(KB,{
@@ -224,21 +222,8 @@ session:{tag:'概念',title:'会话表',en:'Session Table',sum:'防火墙为每�
 nat:{tag:'概念 · 通用原理',title:'NAT 地址转换',en:'Network Address Translation',sum:'内网用的是私网地址（例如 10.x.x.x），去互联网之前，防火墙把源地址换成公网地址，回程时再换回来。转换关系记在会话表里。',
   pts:['源 NAT：内网用户上网，最常见。','NAT Server（目的 NAT）：把 DMZ 里的服务器发布到公网，外部用户访问公网地址，被转到内部服务器。','USG12000 产品页列出的功能包括 NAT 和运营商级 NAT（CGN）。'],src:[SRC.usg12000]},
 xLPU:{tag:'单板',title:'接口板 LPU',en:'Line Processing Unit',sum:'提供对外的物理端口，负责收发报文，并把需要做安全处理的流量送到业务处理板。端口直接做在板上。',
-  pts:['USG12000 的接口板例如 4×400GE QSFP-DD、18×100GE QSFP28。','AntiDDoS12000 的接口板例如 LPUA-48XS（48×10GE SFP+）、LPUA-4DQ（4×400GE QSFP-DD）。','接口板把流量分给业务板的方式属于通用原理示意。'],src:[SRC.usg12000,SRC.ads],drill:'点击单板查看内部'},
-xport:{tag:'接口',title:'固定端口',en:'Fixed Port',sum:'直接做在接口板上的光口，插上光模块和光纤就能用。',pts:['防火墙上，每个业务接口都要加入一个安全区域。','抗 DDoS 设备上，端口分别连接引流和回注的链路。']},
-adsChassis:{tag:'整机',title:'抗 DDoS 设备',en:'Anti-DDoS System',sum:'专门对付 DDoS（分布式拒绝服务）攻击的安全设备。攻击者控制大量"肉鸡"同时发流量，把目标打瘫；抗 DDoS 设备负责识别攻击流量、把它清洗掉，再把正常流量送回去。',
-  pts:['部署方式有两种：串接在链路中直接清洗；或者旁路部署，平时只检测，发现攻击后才把受害目标的流量"引"过来清洗，再"回注"到原网络。','参考机型 AntiDDoS12000：12004/12008/12016 三个型号，扩展槽分别为 4/8/16 个，都有 2 个主控槽；高度 9.8U/15.8U/32.3U。','单机防护能力：12004 最大 400 Gbps / 300 Mpps，12008 最大 1.2 Tbps / 900 Mpps，12016 最大 2.4 Tbps / 1800 Mpps。','电源和风扇都是 N+1 冗余。','本演示的槽位布局是简化画法，不对应真机。'],
-  src:[SRC.ads],drill:'点击单板查看内部，或点左上角「原理演示」看引流和回注'},
-adsSPU:{tag:'单板',title:'业务处理板 SPU',en:'Service Processing Unit',sum:'负责检测和清洗的单板。AntiDDoS12000 的 Datasheet 写到，它用 NP 加速、和 CPU 协同处理来提升防护性能。',
-  pts:['逐包检测所有流量，支持 60 多种流量模型。','针对三层、四层、七层攻击，做过滤、行为分析和机器学习识别。','Datasheet 列出的业务板有 SPUB-ADS-01/02，还有防护业务卡 SPCB-ADS-01/02。','检测和清洗能力按 License 开通，以 10G 为单位。'],src:[SRC.ads],drill:'点击单板查看内部'},
-adsnp:{tag:'芯片',title:'NP 加速芯片',en:'NP Accelerator',sum:'AntiDDoS12000 的 Datasheet 提到"NP 加速 + CPU 协同处理"。一般来说，NP 适合做高速、规则相对简单的逐包过滤，更复杂的分析交给 CPU。',pts:['后半句的分工方式属于通用原理示意。'],src:[SRC.ads]},
-detect:{tag:'概念',title:'攻击检测',en:'Attack Detection',sum:'先要知道"有没有被攻击、谁被攻击"。设备持续分析发往被保护对象的流量，发现流量突增或特征异常，就判定为攻击。',
-  pts:['逐包检测：把流量复制一份给检测设备，看每一个包，最精确。','xFlow 检测：路由器上报流量采样统计，检测设备据此判断，部署更轻量。','检测到攻击后触发引流。'],src:[SRC.ads],drill:'点左上角的动画按钮，看检测、引流、清洗、回注的全过程'},
-divert:{tag:'概念',title:'引流',en:'Traffic Diversion',sum:'把受攻击目标的流量从原来的路径"拐"到清洗设备。常见做法是清洗设备通过 BGP 向路由器发布一条更精确的路由，路由器按最长匹配就会把发往这个目标的流量送过来。',
-  pts:['静态引流：用策略路由（PBR）或 BGP，长期把流量引过来。','动态引流：检测到攻击时才通过 BGP 发布引流路由，攻击结束后撤销。'],src:[SRC.ads]},
-inject:{tag:'概念',title:'回注',en:'Traffic Injection',sum:'清洗后的正常流量要送回原网络，交给真正的服务器。难点是：如果直接还给路由器，路由器又会按引流路由把它发回清洗设备，形成环路。',
-  pts:['所以回注要走一条不会命中引流路由的路。','AntiDDoS12000 Datasheet 列出的回注方式：二层回注、静态路由、策略路由、GRE 隧道、SRv6、MPLS LSP/VPN。'],src:[SRC.ads]},
-clean:{tag:'概念 · 通用原理',title:'清洗',en:'Scrubbing',sum:'攻击流量和正常流量混在一起时，把攻击包丢掉，把正常包留下。',pts:['常用手段：特征过滤、源认证（确认对方是真实的客户端）、限速、行为分析等。','清洗要逐包进行，所以需要很强的处理能力。']},
+  pts:['USG12000 的接口板例如 4×400GE QSFP-DD、18×100GE QSFP28。','接口板把流量分给业务板的方式属于通用原理示意。'],src:[SRC.usg12000],drill:'点击单板查看内部'},
+xport:{tag:'接口',title:'固定端口',en:'Fixed Port',sum:'直接做在接口板上的光口，插上光模块和光纤就能用。',pts:['防火墙上，每个业务接口都要加入一个安全区域。']},
 });
 Object.assign(KB_EN,{
 swChassis:{title:'Chassis Switch',sum:'A high-capacity switch commonly used at the core of campus networks. Like a chassis router, it has MPUs, switch fabric, line cards, power and fans, but its strength is Layer-2 switching: lots of ports, isolation by VLAN, and forwarding by MAC address table. It can also route at Layer 3.',
@@ -261,17 +246,8 @@ zone:{title:'Security Zone',sum:'A firewall groups the networks it connects into
 secpolicy:{title:'Security Policy',sum:'The firewall\'s "door rules": from which zone and address, to which zone and address, which service, permit or deny. Packets are matched against the rules in order; if nothing matches, the default rule denies them.',pts:['Only the first packet of a connection needs a policy check: once it is permitted a session is created, and later and return packets just look up the session table. (generic principle)','Rules are matched top-down and matching stops at the first hit, so more specific rules go first. (generic principle)','Follow "least privilege": only permit the traffic the business really needs.'],note:CFG_NOTE[1]},
 session:{title:'Session Table',sum:'For every permitted connection the firewall keeps a "session": protocol, source and destination addresses and ports, source and destination zones, the matched policy, the post-NAT address, remaining aging time and more.',pts:['Later packets that hit a session are forwarded directly without walking the policy list — faster, and return traffic is allowed automatically.','Command: display firewall session table [ verbose ]. With verbose it shows zones, TTL, outgoing interface, matched policy name, TCP state and more; post-NAT addresses appear in square brackets.','When troubleshooting, if no session is created at all, common causes are a security policy denying the traffic or a blacklisted source address.']},
 nat:{title:'NAT (Network Address Translation)',sum:'Internal hosts use private addresses (such as 10.x.x.x). Before traffic goes to the Internet the firewall swaps the source address for a public one, and swaps it back on the return path. The mapping is kept in the session table.',pts:['Source NAT: internal users reaching the Internet — the most common case.','NAT Server (destination NAT): publishes a DMZ server on a public address; outside users reach the public address and are sent to the internal server.','The USG12000 product page lists NAT and carrier-grade NAT (CGN) among its features.']},
-xLPU:{title:'Line Processing Unit (LPU)',sum:'Provides the external physical ports, sends and receives packets, and hands traffic that needs security processing to the service boards. Ports are built onto the card.',pts:['USG12000 line cards include 4×400GE QSFP-DD and 18×100GE QSFP28.','AntiDDoS12000 line cards include LPUA-48XS (48×10GE SFP+) and LPUA-4DQ (4×400GE QSFP-DD).','How the line card distributes traffic to service boards is an illustrative generic principle.']},
-xport:{title:'Fixed Port',sum:'An optical port built directly onto the line card; plug in an optical module and fiber to use it.',pts:['On a firewall, every service interface must join a security zone.','On an anti-DDoS device, ports connect the diversion and injection links.']},
-adsChassis:{title:'Anti-DDoS System',sum:'A security device built to fight DDoS (distributed denial of service) attacks, where an attacker uses many compromised machines to flood a target. The anti-DDoS system identifies attack traffic, scrubs it away and sends the clean traffic back.',
-  pts:['Two deployments: in-path, scrubbing traffic on the link directly; or off-path, where it normally only detects and, once an attack is found, "diverts" the victim\'s traffic to itself, scrubs it and "injects" it back into the network.','Reference model AntiDDoS12000: models 12004/12008/12016 with 4/8/16 extended slots and 2 MPU slots each; 9.8 U / 15.8 U / 32.3 U high.','Defense capacity per device: 12004 up to 400 Gbps / 300 Mpps, 12008 up to 1.2 Tbps / 900 Mpps, 12016 up to 2.4 Tbps / 1800 Mpps.','Power and fans are both N+1 redundant.','The slot layout in this demo is simplified and does not match the real device.'],
-  drill:'Click a board to look inside, or "How it works" at top left for diversion and injection'},
-adsSPU:{title:'Service Processing Unit (SPU)',sum:'The board that does detection and scrubbing. The AntiDDoS12000 datasheet says it uses NP acceleration in collaboration with the CPU to boost defense performance.',pts:['Per-packet detection of all traffic, with more than 60 traffic models.','Filtering, behavior analysis and machine learning against Layer 3, 4 and 7 attacks.','The datasheet lists service boards SPUB-ADS-01/02 and protection service cards SPCB-ADS-01/02.','Detection and scrubbing capacity is enabled by license, in units of 10G.']},
-adsnp:{title:'NP Accelerator',sum:'The AntiDDoS12000 datasheet mentions "NP acceleration with collaborative CPU processing". In general, an NP is good at fast, fairly simple per-packet filtering, while more complex analysis goes to the CPU.',pts:['The division of work in the second sentence is an illustrative generic principle.']},
-detect:{title:'Attack Detection',sum:'First you need to know whether there is an attack and who is the target. The device keeps analyzing traffic to protected targets; a sudden surge or abnormal pattern is judged to be an attack.',pts:['Per-packet detection: a copy of the traffic goes to the detector, which looks at every packet — the most accurate.','xFlow detection: routers report sampled flow statistics and the detector judges from them — lighter to deploy.','Once an attack is detected, diversion is triggered.'],drill:'Press the animation button at top left to see detection, diversion, scrubbing and injection'},
-divert:{title:'Traffic Diversion',sum:'Steers the victim\'s traffic off its normal path to the scrubbing device. A common way: the scrubbing device advertises a more specific route to the router via BGP, and by longest match the router sends traffic for that target over.',pts:['Static diversion: PBR or BGP keeps traffic diverted long-term.','Dynamic diversion: the BGP diversion route is advertised only when an attack is detected and withdrawn when it ends.']},
-inject:{title:'Traffic Injection',sum:'Clean traffic has to be sent back into the network to reach the real server. The catch: if it is simply handed back to the router, the router follows the diversion route and sends it straight back to the scrubber — a loop.',pts:['So injection must use a path that does not hit the diversion route.','Injection methods listed in the AntiDDoS12000 datasheet: Layer 2, static route, PBR, GRE tunnel, SRv6, MPLS LSP/VPN.']},
-clean:{title:'Scrubbing',sum:'With attack and legitimate traffic mixed together, drop the attack packets and keep the legitimate ones.',pts:['Common techniques: signature filtering, source authentication (checking the client is real), rate limiting and behavior analysis.','Scrubbing is done packet by packet, so it needs a lot of processing power.']},
+xLPU:{title:'Line Processing Unit (LPU)',sum:'Provides the external physical ports, sends and receives packets, and hands traffic that needs security processing to the service boards. Ports are built onto the card.',pts:['USG12000 line cards include 4×400GE QSFP-DD and 18×100GE QSFP28.','How the line card distributes traffic to service boards is an illustrative generic principle.']},
+xport:{title:'Fixed Port',sum:'An optical port built directly onto the line card; plug in an optical module and fiber to use it.',pts:['On a firewall, every service interface must join a security zone.']},
 });
 
 Object.assign(SRC,{
@@ -445,7 +421,6 @@ function drawBoard({n}){
     [130,330].forEach((x,i)=>part('spucpu','cpu'+i,L('多核处理器','Multi-core CPU'),{x,y:80,z:8,w:140,d:120,h:10,mat:'chip'},g=>sink(g,x+2,84,136,112,18,8)));
     for(let i=0;i<4;i++)part('spumem','mem'+i,L('大容量内存','Memory'),{x:130+i*24,y:240,z:8,w:12,d:150,h:28,mat:'chip'});
     for(let i=0;i<4;i++)part('spumem','mem'+(i+4),L('大容量内存','Memory'),{x:330+i*24,y:240,z:8,w:12,d:150,h:28,mat:'chip'});
-    if(DEV==='ads')part('adsnp','acc',L('NP 加速芯片','NP accelerator'),{x:500,y:240,z:8,w:80,d:80,h:10,mat:'chip'});
   }else if(T==='CMU'){
     part('dcdc','dcdc',L('板载电源','On-board power'),{x:30,y:50,z:8,w:60,d:60,h:16,mat:'chip'});
     part('cmu','cmu',L('监控芯片','Monitoring chip'),{x:240,y:120,z:8,w:120,d:100,h:10,mat:'chip'});
@@ -554,7 +529,7 @@ function drawPort({name}){
     const b=grp(lo,{kb,id:'lg:'+kb,tip:t});const x=idx*228;el('rect',{x,y:14,width:212,height:58,rx:10,class:'d-box'},b);el('text',{x:x+14,y:38,class:'d-m'},b).textContent=t;el('text',{x:x+14,y:58,class:'d-s'},b).textContent=s});
 }
 
-/* ---------- 原理演示（2D）：交换机 / 防火墙 / 抗 DDoS ---------- */
+/* ---------- 原理演示（2D）：交换机 / 防火墙 ---------- */
 const T2=(par,x,y,s,cls='d-s',anchor='start')=>{const t=el('text',{x,y,class:cls,'text-anchor':anchor},par);t.textContent=s;return t};
 function tNode(id,kb,x,y,w,h,title,sub,cls=''){const g=grp(scene,{kb,id,tip:title});el('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:10,class:'d-box '+cls},g);T2(g,x,sub?y-3:y+5,title,'d-t','middle');if(sub)T2(g,x,y+17,sub,'d-s','middle');return g}
 const tLink=(pts2,cls='')=>el('polyline',{points:pts2.map(p=>p.join(',')).join(' '),class:'t-link '+cls},scene);
@@ -617,30 +592,6 @@ function topoFwFlows(){const pc=FWT.pc,web=FWT.web,i=FWT.in,o=FWT.out;return [
     {t:L('互联网上的主机主动访问内网 PC，报文从 Untrust 接口进入','A host on the Internet tries to reach the internal PC; the packet arrives on the Untrust interface'),hl:['t-web'],paths:[[[web[0]-90,web[1]],o]]},
     {t:L('没有匹配的会话；安全策略里没有 Untrust → Trust 的放行规则，命中默认规则 deny，报文被丢弃','No matching session, and no policy permits Untrust → Trust, so the default deny rule drops the packet'),hl:['t-pol'],pulse:FWT.out,dur:2400}]}]}
 
-/* 抗 DDoS：旁路部署 */
-const ADT={net:[130,260],rt:[470,260],srv:[840,260],ads:[470,500]};
-function topoAds(){
-  tLink([[230,260],[385,260]]);tLink([[555,260],[740,260]]);
-  tLink([[420,291],[420,467]]);tLink([[520,291],[520,467]]);tLink([[470,291],[470,467]],'dash');
-  tNode('t-net','detect',ADT.net[0],ADT.net[1],200,84,L('互联网','Internet'),L('正常用户 + 攻击者（僵尸网络）','users + attackers (botnet)'));
-  tNode('t-rt','divert',ADT.rt[0],ADT.rt[1],170,62,L('出口路由器','Edge router'),'');
-  tNode('t-srv','detect',ADT.srv[0],ADT.srv[1],200,62,L('被保护的服务器','Protected server'),'203.0.113.80');
-  tNode('t-ads','adsChassis',ADT.ads[0],ADT.ads[1],230,66,'AntiDDoS12000',L('旁路部署','off-path'));
-  [[372,390,L('引流','Divert'),'divert'],[568,390,L('回注','Inject'),'inject'],[470,410,L('检测','Detect'),'detect']].forEach(([x,y,t,kb])=>{const g=grp(scene,{kb,id:'t-l-'+kb,tip:t});T2(g,x,y,t,'d-s','middle')});
-  const r=grp(scene,{kb:'divert',id:'t-route',tip:L('引流路由','Diversion route')});el('rect',{x:560,y:160,width:250,height:40,rx:8,class:'d-box l1'},r);T2(r,685,185,'203.0.113.80/32 → AntiDDoS','d-m t-sm','middle');later(r,1,2);
-  const cl=grp(scene,{kb:'clean',id:'t-clean',tip:L('清洗','Scrubbing')});T2(cl,470,575,L('清洗：丢弃攻击报文','Scrub: drop attack packets'),'d-s','middle');later(cl,1,4);
-  tDrop(330,520,1,4)}
-function topoAdsFlows(){const n=[230,260],r=[385,260],r2=[555,260],s=[740,260];return [
-  {name:L('平时：流量直达，只做检测','Normally: traffic goes direct, detection only'),color:DATA,foot:L('旁路部署时，没有攻击，抗 DDoS 设备就不在业务路径上。','Off-path, the anti-DDoS system is not on the traffic path while there is no attack.'),steps:[
-    {t:L('正常用户访问服务器，流量经过出口路由器直接到达','Users reach the server directly through the edge router'),hl:['t-srv'],paths:[[n,r,r2,s]]},
-    {t:L('路由器把流量复制一份（或上报 xFlow 统计）给抗 DDoS 设备做检测，业务流量本身不绕路','The router copies the traffic (or reports xFlow statistics) to the anti-DDoS system for detection; the traffic itself takes no detour'),hl:['t-ads'],paths:[[[470,291],[470,467]]]}]},
-  {name:L('受攻击时：检测 → 引流 → 清洗 → 回注','Under attack: detect → divert → scrub → inject'),color:CTRL,foot:L('攻击结束后撤销引流路由，流量恢复直达。','When the attack ends, the diversion route is withdrawn and traffic goes direct again.'),steps:[
-    {t:L('大量攻击流量混着正常流量涌向服务器','Massive attack traffic, mixed with normal traffic, floods toward the server'),hl:['t-net','t-srv'],paths:[[n,r,r2,s],[[230,250],[385,250],[555,250],[740,250]]]},
-    {t:L('检测发现发往 203.0.113.80 的流量异常，判定为 DDoS 攻击','Detection sees abnormal traffic to 203.0.113.80 and flags a DDoS attack'),hl:['t-ads'],pulse:ADT.ads,dur:2000},
-    {t:L('抗 DDoS 设备通过 BGP 向路由器发布 203.0.113.80/32 的引流路由，比原有路由更精确','The anti-DDoS system advertises a 203.0.113.80/32 diversion route to the router via BGP — more specific than the existing route'),hl:['t-rt','t-route'],paths:[[[470,467],[470,291]]]},
-    {t:L('路由器按最长匹配，把去往服务器的流量都送到抗 DDoS 设备','By longest match, the router now sends all traffic for the server to the anti-DDoS system'),hl:['t-ads'],paths:[[n,r,[420,291],[420,467]]]},
-    {t:L('清洗：丢弃攻击报文，留下正常用户的报文','Scrubbing: attack packets are dropped, legitimate packets are kept'),hl:['t-ads','t-clean'],pulse:ADT.ads,dur:2200},
-    {t:L('正常流量走回注链路（例如 GRE 隧道或策略路由）回到网络，最终到达服务器。回注不能再命中引流路由，否则会绕回来形成环路','Clean traffic returns over the injection link (e.g. GRE tunnel or PBR) and reaches the server. Injection must not hit the diversion route again, or it would loop'),hl:['t-srv'],paths:[[[520,467],[520,291],r2,s]]}]}]}
 /* 小标签：报文状态（带不带 VLAN 标签、地址变化等） */
 function tTag(x,y,text,kb,fi,si,until,cls=''){const g=grp(scene,{kb,id:'tag-'+fi+'-'+si+'-'+x,tip:text});const w=Math.max(64,text.length*7.4+18);
   el('rect',{x:x-w/2,y:y-12,width:w,height:24,rx:12,class:'d-box tag '+cls},g);T2(g,x,y+4,text,'d-s t-sm','middle');return later(g,fi,si,until)}
@@ -768,8 +719,7 @@ function topoIpsecFlows(){return [
 const DEMOS={
   router:[{id:'route',zh:'IP 寻址与路由',en:'IP & routing',kb:'rtable',draw:topoRoute,flows:topoRouteFlows}],
   switch:[{id:'mac',zh:'MAC 表与 VLAN',en:'MAC table & VLAN',kb:'mactable',draw:topoSwitch,flows:topoSwitchFlows},{id:'trunk',zh:'Trunk 口',en:'Trunk ports',kb:'trunkport',draw:topoTrunk,flows:topoTrunkFlows}],
-  fw:[{id:'policy',zh:'安全策略与源 NAT',en:'Policy & source NAT',kb:'zone',draw:topoFw,flows:topoFwFlows},{id:'natsrv',zh:'NAT Server',en:'NAT Server',kb:'natserver',draw:topoNatSrv,flows:topoNatSrvFlows},{id:'ipsec',zh:'IPsec VPN',en:'IPsec VPN',kb:'ipsec',draw:topoIpsec,flows:topoIpsecFlows}],
-  ads:[{id:'ads',zh:'检测与清洗',en:'Detect & scrub',kb:'detect',draw:topoAds,flows:topoAdsFlows}]};
+  fw:[{id:'policy',zh:'安全策略与源 NAT',en:'Policy & source NAT',kb:'zone',draw:topoFw,flows:topoFwFlows},{id:'natsrv',zh:'NAT Server',en:'NAT Server',kb:'natserver',draw:topoNatSrv,flows:topoNatSrvFlows},{id:'ipsec',zh:'IPsec VPN',en:'IPsec VPN',kb:'ipsec',draw:topoIpsec,flows:topoIpsecFlows}]};
 const demos=()=>DEMOS[DEV]||[],demoOf=v=>demos().find(d=>d.id===v.d)||demos()[0];
 function drawTopo(v){demoOf(v).draw()}
 function topoFlows(){return demoOf(view).flows()}
@@ -795,7 +745,7 @@ function devChassisFlows(){const s=n=>SX(n)+26,Dn=D+6,z=200,BP=40,IN=D-60;
 /* ============ 引线标注（解剖图谱等风格显示） ============ */
 const CALLOUTS={
   xLPU:()=>[['c:fwd'],['c:tcam'],['c:lcpu'],['c:phy0'],['c:conn'],['c:dcdc'],['fports']],
-  SPU:()=>[['c:cpu0'],['c:cpu1'],['c:mem0'],['c:mem4'],['c:acc'],['c:conn'],['c:dcdc']],
+  SPU:()=>[['c:cpu0'],['c:cpu1'],['c:mem0'],['c:mem4'],['c:conn'],['c:dcdc']],
   CMU:()=>[['c:cmu'],['c:conn'],['c:dcdc']],
   chassis:()=>[['chassis',L('机框','Chassis')],['fan'],['slot:1'],['slot:5'],['slot:6',L('主控板（备用）','MPU (standby)')],['slot:7'],['slot:10'],['pwr0']],
   LPU:()=>[['c:np'],['c:tm'],['c:tcam'],['c:lcpu'],['c:conn'],['c:dcdc'],['c:pic0',L('子卡 0 · 8×GE','Subcard 0 · 8×GE')],['c:pic1',L('子卡 1 · 2×100GE','Subcard 1 · 2×100GE')],['panel',L('前面板','Front panel')]],

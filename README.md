@@ -13,6 +13,14 @@ python3 -m http.server 8000
 
 也可以在仓库的 Settings → Pages 里把 `main` 分支发布为 GitHub Pages。
 
+## 学习范围与文档
+
+- 学习范围：**运营商 IP 网络**（骨干网、城域网、IP 承载网），不包括园区网和企业网。
+- 产品规划书（愿景、知识体系、学习路径、路线图）：<https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>
+- 开发文档（流程、架构、决策记录、规格、测试计划、待办）：[docs/README.md](docs/README.md)
+- 变更日志：[CHANGELOG.md](CHANGELOG.md)
+- 自动测试：`node tests/smoke.js`（需要 Playwright）
+
 ## 当前内容：设备结构与基础配置
 
 - **逐层拆解**：机框 → 单板（LPU / MPU / SFU）→ 子卡 → 端口 → 接口。滚轮或双指缩放，拖动平移，点击部件深入。
@@ -20,7 +28,7 @@ python3 -m http.server 8000
 - **报文动画**：数据报文穿越路由器、协议报文上送与 FIB 下发、报文在接口板 NP/TM 内的处理。
 - **命令行实验**（教学模拟）：提示符和两阶段生效参考华为配置指南，配置命令先进入候选配置（`[*HUAWEI]`），`commit` 后才生效；支持 `display device`、`display interface brief`、`display ip interface brief`、`ip address`、`shutdown`、子接口、LoopBack、`display configuration candidate`、`clear configuration candidate` 等，提交后的配置会反映到设备图上。
 
-- **四类设备**：路由器（NetEngine 8000 X8）、交换机（CloudEngine S12700E）、防火墙（HiSecEngine USG12000）、抗 DDoS（AntiDDoS12000），每类都有机框/单板拆解、讲解和原理动画：路由器 IP 寻址与路由表；交换机 MAC 学习与 VLAN、Trunk 口；防火墙安全策略与源 NAT、NAT Server、IPsec VPN；抗 DDoS 检测→引流→清洗→回注。
+- **三类设备**：路由器（NetEngine 8000 X8）、交换机（CloudEngine S12700E）、防火墙（HiSecEngine USG12000），每类都有机框/单板拆解、讲解和原理动画：路由器 IP 寻址与路由表；交换机 MAC 学习与 VLAN、Trunk 口；防火墙安全策略与源 NAT、NAT Server、IPsec VPN。交换机和防火墙属于园区/企业网设备，作为参考保留，不再扩展。
 - **中英文切换**：右上角一键切换界面和讲解语言，英文模式下保留中文术语对照。
 
 ## 内容约定
