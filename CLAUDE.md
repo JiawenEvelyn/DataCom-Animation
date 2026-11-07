@@ -54,6 +54,8 @@
 ## 7. 路线图
 
 1. ✅ 设备结构与基础配置（下一步：结构保持通用简化画法，参数和术语按公开资料核对）
+   - ✅ 各设备基本功能演示（2026-11-03，用户要求每种设备的基本配置和功能都要能演示）：路由器 IP 寻址与路由表（直连/静态/动态、优先级、最长匹配、TTL）；交换机 MAC 表与 VLAN、Trunk 口；防火墙安全策略与源 NAT、NAT Server、IPsec VPN；抗 DDoS 检测与清洗。动态路由协议本身（OSPF/IS-IS/BGP 怎么算路）放到上层协议模块讲。
+   - ✅ 多设备（2026-11-01）：路由器 NetEngine 8000 X8、交换机 CloudEngine S12700E、防火墙 HiSecEngine USG12000、抗 DDoS AntiDDoS12000。命令行只对路由器生效，其他设备配置示例仅展示。
 2. ⬜ 基础组网：多设备拓扑、链路类型、直连与静态路由、逐跳转发
 3. ⬜ 上层业务：IGP、BGP、L3VPN、SRv6 Policy、EVPN、QoS、PCEP、隧道
 
@@ -61,3 +63,6 @@
 
 - 内容大纲文档：「设备结构模块内容大纲（NetEngine 8000 X8）」（claude.ai 文档），其中槽位编号、接口编号起始值仍待核对，界面需标注。
 - 命令行已实现两阶段生效（`[~HUAWEI]`/`[*HUAWEI]`、commit、display/clear configuration candidate）。quit/return 时有未提交配置的真机行为查不到公开说明，演示版只做提示、保留候选配置。
+- 多设备约定：设备档案在 `DEVS`（槽位、型号、机框 KB 键），切换栏 `devBar()`，当前设备存 localStorage `dc-dev`。原理演示放在 `topo` 视图，每台设备可以有多个演示，登记在 `DEMOS[设备]`（id、中英文名、KB 键、draw、flows），视图写作 `{k:'topo',d:id}`，演示切换条是 `demoBar()`。平面拓扑坐标用二维点；随步骤出现的元素用 `later(el,流程,步骤[,截止步骤])`（`data-show`），平时显示、某个流程前几步隐藏的用表格行的 `hide:'流程:步骤,...'`（`data-hide`）。新增 KB 条目必须同时补 `KB_EN`，来源链接登记到 `SRC`/`SRC_EN`。
+- 三款新设备的参考来源：S12700E 产品页与单板类型文档、USG12000 产品页与配置指南（安全区域、会话表）、AntiDDoS12000 公开 Datasheet。槽位布局是示意，界面已标注。
+- 基本功能演示的参考来源：华为百科（info.support.huawei.com/info-finder）的 VLAN、IP 路由、NAT、IPsec 词条。support.huawei.com 的很多配置指南页面当前抓取失败，不绕过，只用能正常打开的公开页面。
