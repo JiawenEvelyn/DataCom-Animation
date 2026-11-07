@@ -17,4 +17,5 @@
 
 | 编号 | 标题 | 里程碑 | 状态 |
 |---|---|---|---|
+| [000](000-device-structure-outline.md) | 设备结构模块内容大纲（NetEngine 8000 X8），v0.1 时写的历史文档 | v0.1 | 已实现（部分内容后来改了，见文首） |
 | [001](001-step-player-and-packet-inspector.md) | 分步播放器与报文透视 | M1 | 草稿 |

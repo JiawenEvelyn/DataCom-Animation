@@ -7,7 +7,7 @@
 
 ## 先读这三份
 
-1. **产品规划书**（Claude 文档，不在仓库里）：<https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>
+1. **[产品规划书](product-plan.md)**（在线版：<https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>）
    为什么做、给谁用、学什么、做成什么样、分几步做。所有其他文档都从它出发。
 2. **[CLAUDE.md](../CLAUDE.md)**：项目规则。每个工作线程开工前必读。
 3. **[process.md](process.md)**：开发流程。一个想法从提出到上线要经过哪些步骤。
@@ -16,7 +16,7 @@
 
 | 文档 | 回答什么问题 | 业界叫法 |
 |---|---|---|
-| 产品规划书 | 为什么做、做什么、做到什么程度、路线图 | 产品需求文档（PRD）、产品路线图（Roadmap） |
+| [product-plan.md](product-plan.md) | 为什么做、做什么、做到什么程度、路线图 | 产品需求文档（PRD）、产品路线图（Roadmap） |
 | [CLAUDE.md](../CLAUDE.md) | 做事必须遵守哪些规则 | 团队约定、工作守则 |
 | [process.md](process.md) | 一个需求怎么走到上线 | 软件开发生命周期（SDLC） |
 | [backlog.md](backlog.md) | 接下来要做什么、先做哪个 | 产品待办列表（Product Backlog） |
@@ -46,4 +46,5 @@ architecture.md 描述「现在的代码长什么样」，每次结构有变化�
 
 - 文档和代码放在同一个 PR 里改。代码改了而文档没改，PR 不算完成。
 - 每份文档开头保留「这份文档是什么 / 什么时候用」两行。
+- 所有开发文档都放在仓库里。在 Claude 文档里写的（如产品规划书），定稿后导出到 docs/，之后两边在同一个 PR 里同步修改。
 - 过时的内容直接改掉或删除，不保留「旧版说明」。历史由 git 记录。

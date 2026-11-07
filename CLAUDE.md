@@ -4,7 +4,7 @@
 
 ## 0. 开工前必读
 
-1. **产品规划书**（claude.ai 文档）：<https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>。愿景、知识体系、学习路径、产品层次、功能设计、范围、路线图、开发流程都在这里，是所有工作的依据。
+1. **产品规划书**：[docs/product-plan.md](docs/product-plan.md)（在线版 <https://claude.ai/artifact/EpyWjhF7rEaE1ZwQ9M5T4d>）。愿景、知识体系、学习路径、产品层次、功能设计、范围、路线图、开发流程都在这里，是所有工作的依据。
 2. **[docs/README.md](docs/README.md)**：仓库文档索引（流程、架构、ADR、内容规范、测试计划、待办、规格）。
 3. 本文件。
 
@@ -32,6 +32,7 @@
 - 按 [docs/process.md](docs/process.md) 走：需求进 backlog → 写 spec 并经用户确认 → 重大技术选择写 ADR → 实现 → 测试 → PR 评审合并 → 发布并记 CHANGELOG → 里程碑复盘。
 - **没有「已确认」的 spec 不写功能代码**。bug 修复和文档改动除外。
 - 用户中途的新想法先记进 docs/backlog.md 排队，当前里程碑不临时插入，除非是 bug 或用户明确要求插队。
+- **所有开发文档都要合入仓库（2026-11-07 用户要求）**：在 Claude 文档里写的规划、大纲、规格，定稿后导出到 docs/；以后修改时，在线版和仓库版在同一个 PR 里同步。
 - 文档和代码在同一个 PR 里改；代码结构变了要同步 docs/architecture.md。
 - 用户想借这个项目学习软件开发流程：每份文档开头写「这份文档是什么 / 什么时候用」，PR 描述里说明这次走了流程的哪几步。
 - 当前进度：**M0（开发流程与文档）**。路线图见下面第 8 节。
@@ -79,7 +80,7 @@
 
 ## 9. 现有代码约定与已知问题
 
-- 内容大纲文档：「设备结构模块内容大纲（NetEngine 8000 X8）」（claude.ai 文档），其中槽位编号、接口编号起始值仍待核对，界面需标注。
+- 内容大纲文档：[docs/specs/000-device-structure-outline.md](docs/specs/000-device-structure-outline.md)（设备结构模块内容大纲），其中槽位编号、接口编号起始值仍待核对，界面需标注。
 - 命令行已实现两阶段生效（`[~HUAWEI]`/`[*HUAWEI]`、commit、display/clear configuration candidate）。quit/return 时有未提交配置的真机行为查不到公开说明，演示版只做提示、保留候选配置。
 - 多设备约定：设备档案在 `DEVS`（槽位、型号、机框 KB 键），切换栏 `devBar()`，当前设备存 localStorage `dc-dev`。原理演示放在 `topo` 视图，每台设备可以有多个演示，登记在 `DEMOS[设备]`（id、中英文名、KB 键、draw、flows），视图写作 `{k:'topo',d:id}`，演示切换条是 `demoBar()`。平面拓扑坐标用二维点；随步骤出现的元素用 `later(el,流程,步骤[,截止步骤])`（`data-show`），平时显示、某个流程前几步隐藏的用表格行的 `hide:'流程:步骤,...'`（`data-hide`）。新增 KB 条目必须同时补 `KB_EN`，来源链接登记到 `SRC`/`SRC_EN`。（M1 会改成数据驱动，届时更新这里。）
 - 两款非路由器设备的参考来源：S12700E 产品页与单板类型文档、USG12000 产品页与配置指南（安全区域、会话表）。槽位布局是示意，界面已标注。
