@@ -15,7 +15,7 @@
 ## 2. 冒烟测试
 
 ```bash
-node tests/smoke.js            # 全量：4 台设备 × 8 风格 × 中英文 × 1400/390 宽度
+node tests/smoke.js            # 全量：3 台设备 × 8 风格 × 中英文 × 1400/390 宽度
 node tests/smoke.js --quick    # 快速：只跑默认风格
 ```
 
