@@ -35,7 +35,7 @@ function cjkLeft(p) {
     let n;
     while ((n = w.nextNode())) {
       const e = n.parentElement;
-      if (/[一-龥]/.test(n.textContent) && !e.closest(ok) && !e.closest('#info'))
+      if (/[一-龥]/.test(n.textContent) && !e.closest(ok) && !e.closest('script,style') && !e.closest('#info'))
         out.push(n.textContent.trim().slice(0, 40));
     }
     for (const e of document.querySelectorAll('#info *'))
